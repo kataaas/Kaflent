@@ -1,0 +1,20 @@
+app:
+  jwt-token-validity: 1314000000
+  jwt-secret-token: alfsxzec9-0ad36-12da-9mnelfa-2dsaaljkn3
+
+spring:
+  data:
+    web:
+      pageable:
+        default-page-size: 5
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/kaflent?createDatabaseIfNotExist=true
+    username: root
+    password: postgres
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true

@@ -1,0 +1,15 @@
+package ru.kataaas.kaflent.utils;
+
+public class StaticVariable {
+
+    public final static String SECURE_COOKIE = "_Secure-24ZAFWZ3";
+
+    public static final String DEFAULT_PAGE_NUMBER_POSTS = "0";
+
+    public  static final String DEFAULT_PAGE_SIZE_POSTS = "5";
+
+    public static final String DEFAULT_PAGE_NUMBER_COMMENTS = "0";
+
+    public  static final String DEFAULT_PAGE_SIZE_COMMENTS = "10";
+
+}
