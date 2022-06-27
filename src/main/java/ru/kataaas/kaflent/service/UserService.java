@@ -56,6 +56,10 @@ public class UserService {
         userRepository.save(userEntity);
     }
 
+    public Long findIdByUsername(String username) {
+        return userRepository.findIdByUsername(username);
+    }
+
     public UserEntity findById(Long id) {
         return userRepository.findById(id).orElse(null);
     }

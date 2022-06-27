@@ -5,35 +5,48 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.kataaas.kaflent.payload.GroupResponse;
 import ru.kataaas.kaflent.payload.RegisterDTO;
 import ru.kataaas.kaflent.payload.UserDTO;
 import ru.kataaas.kaflent.entity.RoleEntity;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.UserMapper;
+import ru.kataaas.kaflent.service.GroupService;
+import ru.kataaas.kaflent.service.GroupUserJoinService;
 import ru.kataaas.kaflent.service.RoleService;
 import ru.kataaas.kaflent.service.UserService;
+import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/v1")
 public class UserController {
 
-    private final UserService userService;
-
     private final UserMapper userMapper;
+
+    private final UserService userService;
 
     private final RoleService roleService;
 
+    private final GroupService groupService;
+
+    private final GroupUserJoinService groupUserJoinService;
+
     @Autowired
-    public UserController(UserService userService,
-                          UserMapper userMapper,
-                          RoleService roleService) {
-        this.userService = userService;
+    public UserController(UserMapper userMapper,
+                          UserService userService,
+                          RoleService roleService,
+                          GroupService groupService,
+                          GroupUserJoinService groupUserJoinService) {
         this.userMapper = userMapper;
+        this.userService = userService;
         this.roleService = roleService;
+        this.groupService = groupService;
+        this.groupUserJoinService = groupUserJoinService;
     }
 
     @GetMapping("/user/fetch")
@@ -49,6 +62,15 @@ public class UserController {
             return ResponseEntity.ok(userMapper.toUserDTO(user));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @GetMapping("/user/{username}/groups")
+    public GroupResponse fetchGroupsByUser(@PathVariable String username,
+                                           @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_GROUPS, required = false) int pageNo,
+                                           @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_GROUPS, required = false) int pageSize) {
+        Long userId = userService.findIdByUsername(username);
+        List<Long> ids = groupUserJoinService.getGroupIdsByUserId(userId);
+        return groupService.getGroupsByIds(ids, pageNo, pageSize);
     }
 
     @PostMapping("/user/register")

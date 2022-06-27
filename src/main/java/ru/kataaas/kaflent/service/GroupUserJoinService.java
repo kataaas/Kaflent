@@ -29,6 +29,10 @@ public class GroupUserJoinService {
         return groupUserJoinRepository.getUserIdsInGroup(groupId);
     }
 
+    public List<Long> getGroupIdsByUserId(Long userId) {
+        return groupUserJoinRepository.getGroupIdsByUser(userId);
+    }
+
     public GroupUser findByUserIdAndGroupId(Long userId, Long groupId) {
         return groupUserJoinRepository.findByUserIdAndGroupId(userId, groupId);
     }

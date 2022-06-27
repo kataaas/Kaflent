@@ -12,7 +12,7 @@ public class UserDTO {
 
     private String username;
 
-    private List<LightGroupDTO> groups;
+    private int groups;
 
     private List<String> roles;
 

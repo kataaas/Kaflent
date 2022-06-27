@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import ru.kataaas.kaflent.payload.*;
-import ru.kataaas.kaflent.payload.LightGroupDTO;
 import ru.kataaas.kaflent.entity.UserEntity;
 
 import java.util.ArrayList;
@@ -25,20 +24,16 @@ public class UserMapper {
 
     public UserDTO toUserDTO(UserEntity user) {
         UserDTO userDTO = new UserDTO();
-        List<LightGroupDTO> groups = new ArrayList<>();
         List<String> roles = new ArrayList<>();
+        user.getRoles().forEach(role -> roles.add(role.getName()));
 
         userDTO.setId(user.getId());
         userDTO.setUsername(user.getUsername());
+        userDTO.setGroups(user.getGroups().size());
+        userDTO.setRoles(roles);
         userDTO.setCreatedAt(user.getCreatedAt());
         userDTO.setAccountNonLocked(user.isAccountNonLocked());
         userDTO.setEnabled(user.isEnabled());
-
-        user.getGroups().forEach(group -> groups.add(groupMapper.toLightGroupDTO(group)));
-        user.getRoles().forEach(role -> roles.add(role.getName()));
-
-        userDTO.setGroups(groups);
-        userDTO.setRoles(roles);
 
         return userDTO;
     }
