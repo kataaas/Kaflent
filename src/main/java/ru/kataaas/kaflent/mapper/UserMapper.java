@@ -1,6 +1,7 @@
 package ru.kataaas.kaflent.mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import ru.kataaas.kaflent.payload.*;
 import ru.kataaas.kaflent.payload.LightGroupDTO;
@@ -25,7 +26,6 @@ public class UserMapper {
     public UserDTO toUserDTO(UserEntity user) {
         UserDTO userDTO = new UserDTO();
         List<LightGroupDTO> groups = new ArrayList<>();
-//        List<RoleDTO> roles = new ArrayList<>();
         List<String> roles = new ArrayList<>();
 
         userDTO.setId(user.getId());
@@ -36,12 +36,27 @@ public class UserMapper {
 
         user.getGroups().forEach(group -> groups.add(groupMapper.toLightGroupDTO(group)));
         user.getRoles().forEach(role -> roles.add(role.getName()));
-//        user.getRoles().forEach(role -> roles.add(roleMapper.toRoleDTO(role)));
 
         userDTO.setGroups(groups);
         userDTO.setRoles(roles);
 
         return userDTO;
+    }
+
+    public UserResponse toUserResponse(Page<UserEntity> users) {
+        UserResponse userResponse = new UserResponse();
+        List<LightUserDTO> userDTOList = new ArrayList<>();
+        List<UserEntity> userEntities = users.getContent();
+        userEntities.forEach(user -> userDTOList.add(new LightUserDTO(user.getUsername())));
+
+        userResponse.setUsers(userDTOList);
+        userResponse.setPageNo(users.getNumber());
+        userResponse.setPageSize(users.getSize());
+        userResponse.setTotalElements(users.getTotalElements());
+        userResponse.setTotalPages(users.getTotalPages());
+        userResponse.setLast(users.isLast());
+
+        return userResponse;
     }
 
     public AuthUserResponse toAuthResponse(UserEntity user, String accessToken) {

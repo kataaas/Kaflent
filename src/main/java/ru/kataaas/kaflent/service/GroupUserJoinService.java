@@ -2,7 +2,6 @@ package ru.kataaas.kaflent.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.kataaas.kaflent.entity.GroupUser;
 import ru.kataaas.kaflent.repository.GroupUserJoinRepository;
 
@@ -24,6 +23,10 @@ public class GroupUserJoinService {
 
     public List<GroupUser> getAllByUserId(Long userId) {
         return groupUserJoinRepository.getAllByUserId(userId);
+    }
+
+    public List<Long> getUserIdsByGroupId(Long groupId) {
+        return groupUserJoinRepository.getUserIdsInGroup(groupId);
     }
 
     public GroupUser findByUserIdAndGroupId(Long userId, Long groupId) {

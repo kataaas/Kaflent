@@ -3,6 +3,7 @@ app:
   jwt-secret-token: alfsxzec9-0ad36-12da-9mnelfa-2dsaaljkn3
 
 spring:
+
   data:
     web:
       pageable:
@@ -17,4 +18,5 @@ spring:
     open-in-view: true
     hibernate:
       ddl-auto: update
-    show-sql: true
+  main:
+    allow-circular-references: true

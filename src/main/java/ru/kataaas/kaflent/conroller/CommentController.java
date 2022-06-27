@@ -104,7 +104,7 @@ public class CommentController {
                         return ResponseEntity.ok().body(commentMapper.toCommentDTO(savedComment));
                     }
                 }
-                if (user.getId().equals(comment.getUserId()) || userService.checkIfUserIsAdminGroup(user.getId(), post.getGroupId())) {
+                if (user.getId().equals(comment.getUserId()) || userService.checkIfUserIsGroupAdmin(user.getId(), post.getGroupId())) {
                     if (action.equals("remove")) {
                         commentService.delete(comment);
                         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

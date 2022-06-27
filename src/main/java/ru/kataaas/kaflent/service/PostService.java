@@ -11,7 +11,6 @@ import ru.kataaas.kaflent.mapper.PostMapper;
 import ru.kataaas.kaflent.payload.PostResponse;
 import ru.kataaas.kaflent.repository.PostRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,19 +19,15 @@ public class PostService {
 
     private final PostMapper postMapper;
 
-    private final UserService userService;
-
     private final PostRepository postRepository;
 
     private final GroupUserJoinService groupUserJoinService;
 
     @Autowired
     public PostService(PostMapper postMapper,
-                       UserService userService,
                        PostRepository postRepository,
                        GroupUserJoinService groupUserJoinService) {
         this.postMapper = postMapper;
-        this.userService = userService;
         this.postRepository = postRepository;
         this.groupUserJoinService = groupUserJoinService;
     }

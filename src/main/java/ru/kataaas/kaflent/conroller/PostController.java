@@ -49,7 +49,7 @@ public class PostController {
         UserEntity user = userService.getUserEntityFromRequest(request);
         Long userId = user.getId();
         Long groupId = groupService.findIdByName(groupName);
-        if (userService.checkIfUserIsAdminGroup(userId, groupId)) {
+        if (userService.checkIfUserIsGroupAdmin(userId, groupId)) {
             PostEntity post = new PostEntity();
             post.setContent(lightPostDTO.getContent());
             post.setGroupId(groupId);
@@ -86,7 +86,8 @@ public class PostController {
         PostEntity post = postService.findById(postId);
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
-            if (userService.checkIfUserIsAdminGroup(user.getId(), post.getGroupId())) {
+            if (userService.checkIfUserIsGroupAdmin(user.getId(), post.getGroupId())
+                    || userService.checkIfUserIsAdmin(user.getId())) {
                 try {
                     if (action.equals("update")) {
                         post.setContent(payload);

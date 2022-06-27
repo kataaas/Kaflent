@@ -4,6 +4,10 @@ public class StaticVariable {
 
     public final static String SECURE_COOKIE = "_Secure-24ZAFWZ3";
 
+    public static final String DEFAULT_PAGE_NUMBER_USERS = "0";
+
+    public  static final String DEFAULT_PAGE_SIZE_USERS = "10";
+
     public static final String DEFAULT_PAGE_NUMBER_POSTS = "0";
 
     public  static final String DEFAULT_PAGE_SIZE_POSTS = "5";

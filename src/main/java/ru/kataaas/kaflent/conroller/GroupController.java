@@ -9,11 +9,14 @@ import ru.kataaas.kaflent.payload.CreateGroupDTO;
 import ru.kataaas.kaflent.entity.GroupEntity;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.GroupMapper;
+import ru.kataaas.kaflent.payload.UserResponse;
 import ru.kataaas.kaflent.service.GroupService;
 import ru.kataaas.kaflent.service.GroupUserJoinService;
 import ru.kataaas.kaflent.service.UserService;
+import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -46,6 +49,15 @@ public class GroupController {
             return ResponseEntity.ok(groupMapper.toGroupDTO(group));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @GetMapping("/{groupName}/users")
+    public UserResponse fetchUsersInGroup(@PathVariable String groupName,
+                                          @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_USERS, required = false) int pageNo,
+                                          @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_USERS, required = false) int pageSize) {
+        Long groupId = groupService.findIdByName(groupName);
+        List<Long> ids = groupUserJoinService.getUserIdsByGroupId(groupId);
+        return userService.getUsersByIds(ids, pageNo, pageSize);
     }
 
     @PostMapping("/group/create")
