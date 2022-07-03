@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.kataaas.kaflent.payload.UpdateContentDTO;
 import ru.kataaas.kaflent.payload.LightPostDTO;
 import ru.kataaas.kaflent.payload.PostResponse;
@@ -43,9 +44,10 @@ public class PostController {
     }
 
     @PostMapping("/{groupName}/posts")
-    public ResponseEntity<?> createPost(@PathVariable String groupName,
+    public ResponseEntity<?> createPost(HttpServletRequest request,
+                                        @PathVariable String groupName,
                                         @RequestBody LightPostDTO lightPostDTO,
-                                        HttpServletRequest request) {
+                                        @RequestParam("images") MultipartFile[] images) {
         UserEntity user = userService.getUserEntityFromRequest(request);
         Long userId = user.getId();
         Long groupId = groupService.findIdByName(groupName);
