@@ -20,8 +20,5 @@ public class FileService {
         return fileRepository.save(file);
     }
 
-    public FileEntity findByOwnerIdAndType(Long id, String type) {
-        return fileRepository.findByOwnerIdAndType(id, FileTypeEnum.valueOf(type));
-    }
 
 }

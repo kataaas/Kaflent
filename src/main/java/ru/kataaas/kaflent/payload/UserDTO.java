@@ -12,6 +12,8 @@ public class UserDTO {
 
     private String username;
 
+    private String image;
+
     private int groups;
 
     private List<String> roles;

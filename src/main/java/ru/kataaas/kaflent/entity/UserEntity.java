@@ -25,6 +25,8 @@ public class UserEntity implements Serializable {
 
     private String password;
 
+    private String imageName;
+
     @ManyToMany(fetch = FetchType.EAGER, mappedBy = "userEntities", cascade = CascadeType.ALL)
     private Set<GroupEntity> groups = new HashSet<>();
 

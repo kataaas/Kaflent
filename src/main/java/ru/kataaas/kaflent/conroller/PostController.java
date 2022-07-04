@@ -63,7 +63,7 @@ public class PostController {
             PostEntity savedPost = postService.save(post);
             if (files != null) {
                 for (MultipartFile file : files) {
-                    storageService.store(file, savedPost.getId(), FileTypeEnum.POST_FILE);
+                    storageService.store(file, FileTypeEnum.POST_FILE);
                 }
             }
             return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toPostDTO(savedPost));

@@ -42,7 +42,7 @@ public class StorageService {
         }
     }
 
-    public void store(MultipartFile file, Long ownerId, FileTypeEnum type) {
+    public String store(MultipartFile file, FileTypeEnum type) {
         String completeName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         String[] array = completeName.split("\\.");
         String fileExtension = array[array.length - 1];
@@ -57,16 +57,16 @@ public class StorageService {
         FileEntity fileEntity = new FileEntity();
         fileEntity.setFilename(fileName);
         fileEntity.setUrl(uri);
-        fileEntity.setOwnerId(ownerId);
         fileEntity.setType(type);
 
         try {
             if (file.isEmpty()) {
                 log.warn("Cannot save empty file with name : {}", newName);
-                return;
+                return null;
             }
             if (fileName.contains("..")) {
                 log.warn("Cannot store file with relative path outside current directory {}", newName);
+                return null;
             }
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, Paths.get(StaticVariable.FILE_STORAGE_PATH).resolve(newName),
@@ -76,6 +76,7 @@ public class StorageService {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+        return fileName;
     }
 
 }
