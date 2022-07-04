@@ -16,6 +16,8 @@ public class FileEntity {
 
     private String filename;
 
+    private String url;
+
     private Long ownerId; // user id or group id
 
     @Enumerated(value = EnumType.STRING)

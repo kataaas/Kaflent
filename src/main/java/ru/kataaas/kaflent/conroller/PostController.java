@@ -14,7 +14,9 @@ import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.PostMapper;
 import ru.kataaas.kaflent.service.GroupService;
 import ru.kataaas.kaflent.service.PostService;
+import ru.kataaas.kaflent.service.StorageService;
 import ru.kataaas.kaflent.service.UserService;
+import ru.kataaas.kaflent.utils.FileTypeEnum;
 import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,31 +33,39 @@ public class PostController {
 
     private final GroupService groupService;
 
+    private final StorageService storageService;
 
     @Autowired
     public PostController(PostMapper postMapper,
                           PostService postService,
                           UserService userService,
-                          GroupService groupService) {
+                          GroupService groupService,
+                          StorageService storageService) {
         this.postMapper = postMapper;
         this.postService = postService;
         this.userService = userService;
         this.groupService = groupService;
+        this.storageService = storageService;
     }
 
     @PostMapping("/{groupName}/posts")
     public ResponseEntity<?> createPost(HttpServletRequest request,
                                         @PathVariable String groupName,
-                                        @RequestBody LightPostDTO lightPostDTO,
-                                        @RequestParam("images") MultipartFile[] images) {
+                                        @RequestParam("content") String content,
+                                        @RequestParam("files") MultipartFile[] files) {
         UserEntity user = userService.getUserEntityFromRequest(request);
         Long userId = user.getId();
         Long groupId = groupService.findIdByName(groupName);
         if (userService.checkIfUserIsGroupAdmin(userId, groupId)) {
             PostEntity post = new PostEntity();
-            post.setContent(lightPostDTO.getContent());
+            post.setContent(content);
             post.setGroupId(groupId);
             PostEntity savedPost = postService.save(post);
+            if (files != null) {
+                for (MultipartFile file : files) {
+                    storageService.store(file, savedPost.getId(), FileTypeEnum.POST_FILE);
+                }
+            }
             return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toPostDTO(savedPost));
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You don't have permission");
