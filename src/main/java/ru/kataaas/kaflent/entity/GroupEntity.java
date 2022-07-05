@@ -21,7 +21,7 @@ public class GroupEntity {
 
     private String name;
 
-    private String imageName;
+    private String image;
 
     @Column(name = "type")
     @Enumerated(value = EnumType.STRING)

@@ -50,7 +50,7 @@ public class StorageService {
 
         String newName = fileName + "." + fileExtension;
         String uri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/uploads/")
+                .path("api/v1/uploads/")
                 .path(newName)
                 .toUriString();
 

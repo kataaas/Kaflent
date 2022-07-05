@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kataaas.kaflent.entity.GroupEntity;
@@ -38,13 +39,16 @@ public class GroupService {
         this.groupUserJoinService = groupUserJoinService;
     }
 
-//    @Transactional
-//    public void delete(Long groupId) {
-//        groupRepository.deleteById(groupId);
-//    }
+    public void save(GroupEntity group) {
+        groupRepository.save(group);
+    }
 
     public Long findIdByName(String name) {
         return groupRepository.findIdByName(name);
+    }
+
+    public GroupEntity findById(Long id) {
+        return groupRepository.findById(id).orElse(null);
     }
 
     public GroupEntity findByName(String name) {

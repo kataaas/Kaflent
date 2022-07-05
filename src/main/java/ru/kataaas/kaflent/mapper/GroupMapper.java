@@ -33,6 +33,7 @@ public class GroupMapper {
 
         groupDTO.setId(group.getId());
         groupDTO.setName(group.getName());
+        groupDTO.setImage(group.getImage());
         groupDTO.setType(group.getGroupTypeEnum().name());
         groupDTO.setSubscribers(group.getUserEntities().size());
         groupDTO.setPosts(postResponse);

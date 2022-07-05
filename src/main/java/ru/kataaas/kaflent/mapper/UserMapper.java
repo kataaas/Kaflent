@@ -29,7 +29,7 @@ public class UserMapper {
 
         userDTO.setId(user.getId());
         userDTO.setUsername(user.getUsername());
-        userDTO.setImage(user.getImageName());
+        userDTO.setImage(user.getImage());
         userDTO.setGroups(user.getGroups().size());
         userDTO.setRoles(roles);
         userDTO.setCreatedAt(user.getCreatedAt());
