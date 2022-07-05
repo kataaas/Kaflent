@@ -55,7 +55,7 @@ public class StorageService {
                 .toUriString();
 
         FileEntity fileEntity = new FileEntity();
-        fileEntity.setFilename(fileName);
+        fileEntity.setFilename(newName);
         fileEntity.setUrl(uri);
         fileEntity.setType(type);
 
@@ -76,7 +76,7 @@ public class StorageService {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-        return fileName;
+        return newName;
     }
 
 }

@@ -1,6 +1,8 @@
 package ru.kataaas.kaflent.conroller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +14,11 @@ import ru.kataaas.kaflent.service.UserService;
 import ru.kataaas.kaflent.utils.FileTypeEnum;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 @RestController
 @CrossOrigin
-@RequestMapping("api/v1")
+@RequestMapping("/api/v1")
 public class ImageController {
 
     private final UserService userService;
@@ -29,7 +32,7 @@ public class ImageController {
     }
 
     @PostMapping(value = "/user/upload")
-    public ResponseEntity<?> updateUserImage(HttpServletRequest request, @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<?> uploadUserImage(HttpServletRequest request, @RequestParam("image") MultipartFile image) {
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
             try {
@@ -41,7 +44,15 @@ public class ImageController {
                 return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
             }
         }
-        return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @GetMapping(value = "/get/{fileName}")
+    public ResponseEntity<InputStreamResource> getFile(@PathVariable String fileName) throws IOException {
+        ClassPathResource file = new ClassPathResource( fileName);
+        return ResponseEntity.ok().contentLength(file.contentLength())
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(new InputStreamResource(file.getInputStream()));
     }
 
 }
