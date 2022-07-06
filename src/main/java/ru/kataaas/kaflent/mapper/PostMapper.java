@@ -25,7 +25,7 @@ public class PostMapper {
         PostResponse postResponse = new PostResponse();
         List<PostDTO> content = new ArrayList<>();
         // get post content from page and convert to postDTO
-        posts.getContent().stream().forEach(post -> content.add(toPostDTO(post)));
+        posts.getContent().forEach(post -> content.add(toPostDTO(post)));
 
         postResponse.setPosts(content);
         postResponse.setPageNo(posts.getNumber());
@@ -39,8 +39,12 @@ public class PostMapper {
 
     public PostDTO toPostDTO(PostEntity post) {
         PostDTO postDTO = new PostDTO();
+        List<String> files = new ArrayList<>();
+        post.getFiles().forEach(file -> files.add(file.getFilename()));
+
         postDTO.setId(post.getId());
         postDTO.setContent(post.getContent());
+        postDTO.setFiles(files);
         postDTO.setCreatedAt(post.getCreatedAt());
         postDTO.setGroupId(post.getGroupId());
         postDTO.setCountOfComments(commentService.countOfComments(post.getGroupId()));
