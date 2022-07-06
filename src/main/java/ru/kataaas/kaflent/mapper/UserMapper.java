@@ -12,13 +12,10 @@ import java.util.List;
 @Service
 public class UserMapper {
 
-    private final RoleMapper roleMapper;
-
     private final GroupMapper groupMapper;
 
     @Autowired
-    public UserMapper(RoleMapper roleMapper, GroupMapper groupMapper) {
-        this.roleMapper = roleMapper;
+    public UserMapper(GroupMapper groupMapper) {
         this.groupMapper = groupMapper;
     }
 
@@ -43,7 +40,7 @@ public class UserMapper {
         UserResponse userResponse = new UserResponse();
         List<LightUserDTO> userDTOList = new ArrayList<>();
         List<UserEntity> userEntities = users.getContent();
-        userEntities.forEach(user -> userDTOList.add(new LightUserDTO(user.getUsername())));
+        userEntities.forEach(user -> userDTOList.add(new LightUserDTO(user.getUsername(), user.getImage())));
 
         userResponse.setUsers(userDTOList);
         userResponse.setPageNo(users.getNumber());

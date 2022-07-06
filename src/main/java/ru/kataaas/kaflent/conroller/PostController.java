@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.kataaas.kaflent.entity.FileEntity;
 import ru.kataaas.kaflent.payload.UpdateContentDTO;
 import ru.kataaas.kaflent.payload.LightPostDTO;
 import ru.kataaas.kaflent.payload.PostResponse;
@@ -20,6 +21,8 @@ import ru.kataaas.kaflent.utils.FileTypeEnum;
 import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashSet;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -51,30 +54,39 @@ public class PostController {
     @PostMapping("/{groupName}/posts")
     public ResponseEntity<?> createPost(HttpServletRequest request,
                                         @PathVariable String groupName,
-                                        @RequestParam("content") String content,
-                                        @RequestParam("files") MultipartFile[] files) {
+                                        @RequestParam(value = "content") String content,
+                                        @RequestParam(value = "files", required = false) MultipartFile[] files) {
         UserEntity user = userService.getUserEntityFromRequest(request);
-        Long userId = user.getId();
         Long groupId = groupService.findIdByName(groupName);
-        if (userService.checkIfUserIsGroupAdmin(userId, groupId)) {
-            PostEntity post = new PostEntity();
-            post.setContent(content);
-            post.setGroupId(groupId);
-            PostEntity savedPost = postService.save(post);
-            if (files != null) {
-                for (MultipartFile file : files) {
-                    storageService.store(file, FileTypeEnum.POST_FILE);
+        if (user != null) {
+            if (userService.checkIfUserIsGroupAdmin(user.getId(), groupId)) {
+                PostEntity post = new PostEntity();
+                post.setContent(content);
+                post.setGroupId(groupId);
+                if (files != null) {
+                    Set<FileEntity> fileEntities = new HashSet<>();
+                    try {
+                        for (MultipartFile file : files) {
+                            FileEntity fileEntity = storageService.store(file, FileTypeEnum.POST_FILE);
+                            fileEntities.add(fileEntity);
+                        }
+                        post.setFiles(fileEntities);
+                    } catch (Exception e) {
+                        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+                    }
                 }
+                PostEntity savedPost = postService.save(post);
+                return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toPostDTO(savedPost));
             }
-            return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toPostDTO(savedPost));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You don't have permission");
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You don't have permission");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @GetMapping("/{groupName}/posts")
     public PostResponse fetchPostsByGroup(
             @PathVariable String groupName,
-            @RequestParam(value = "pageNo", defaultValue = "1", required = false) int pageNo,
+            @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_POSTS, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_POSTS, required = false) int pageSize) {
         Long groupId = groupService.findIdByName(groupName);
         Page<PostEntity> posts = postService.getAllPostsByGroupId(groupId, pageNo, pageSize);
@@ -114,6 +126,7 @@ public class PostController {
                     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
                 }
             }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }

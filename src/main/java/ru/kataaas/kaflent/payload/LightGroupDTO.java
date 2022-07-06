@@ -7,6 +7,8 @@ public class LightGroupDTO {
 
     private String name;
 
+    private String image;
+
     private String type;
 
     private int subscribers;

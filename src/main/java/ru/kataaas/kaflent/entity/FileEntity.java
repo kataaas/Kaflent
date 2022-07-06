@@ -18,8 +18,6 @@ public class FileEntity {
 
     private String filename;
 
-    private String url;
-
     @Enumerated(value = EnumType.STRING)
     private FileTypeEnum type;
 

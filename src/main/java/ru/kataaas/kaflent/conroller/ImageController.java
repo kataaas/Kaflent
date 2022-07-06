@@ -3,6 +3,7 @@ package ru.kataaas.kaflent.conroller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class ImageController {
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
             try {
-                String filename = storageService.store(image, FileTypeEnum.USER_IMAGE);
+                String filename = storageService.store(image, FileTypeEnum.USER_IMAGE).getFilename();
                 user.setImage(filename);
                 userService.save(user);
                 return ResponseEntity.status(HttpStatus.OK).build();
@@ -63,7 +64,7 @@ public class ImageController {
             if (group != null) {
                 if (userService.checkIfUserIsGroupAdmin(user.getId(), group.getId())) {
                     try {
-                        String filename = storageService.store(image, FileTypeEnum.GROUP_IMAGE);
+                        String filename = storageService.store(image, FileTypeEnum.GROUP_IMAGE).getFilename();
                         group.setImage(filename);
                         groupService.save(group);
                         return ResponseEntity.status(HttpStatus.OK).build();
@@ -80,7 +81,7 @@ public class ImageController {
 
     @GetMapping(value = "/uploads/{fileName}")
     public ResponseEntity<InputStreamResource> getFile(@PathVariable String fileName) throws IOException {
-        ClassPathResource file = new ClassPathResource("uploads/" + fileName);
+        Resource file = storageService.load(fileName);
         return ResponseEntity.ok().contentLength(file.contentLength())
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(new InputStreamResource(file.getInputStream()));

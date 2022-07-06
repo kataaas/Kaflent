@@ -9,4 +9,6 @@ public class LightUserDTO {
 
     private String username;
 
+    private String image;
+
 }

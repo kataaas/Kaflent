@@ -17,8 +17,6 @@ public class GroupDTO {
 
     private int subscribers;
 
-    private PostResponse posts;
-
     private Date createdAt;
 
 }

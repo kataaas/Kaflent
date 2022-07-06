@@ -9,7 +9,9 @@ import ru.kataaas.kaflent.entity.PostEntity;
 import ru.kataaas.kaflent.service.CommentService;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class PostMapper {
@@ -39,7 +41,7 @@ public class PostMapper {
 
     public PostDTO toPostDTO(PostEntity post) {
         PostDTO postDTO = new PostDTO();
-        List<String> files = new ArrayList<>();
+        Set<String> files = new HashSet<>();
         post.getFiles().forEach(file -> files.add(file.getFilename()));
 
         postDTO.setId(post.getId());
