@@ -9,11 +9,13 @@ import ru.kataaas.kaflent.entity.GroupEntity;
 import ru.kataaas.kaflent.entity.GroupUser;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.GroupMapper;
+import ru.kataaas.kaflent.payload.GroupMemberDTO;
 import ru.kataaas.kaflent.payload.GroupResponse;
 import ru.kataaas.kaflent.repository.GroupRepository;
 import ru.kataaas.kaflent.utils.GroupTypeEnum;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GroupService {
@@ -45,11 +47,7 @@ public class GroupService {
         return groupRepository.findIdByName(name);
     }
 
-    public GroupEntity findById(Long id) {
-        return groupRepository.findById(id).orElse(null);
-    }
-
-    public GroupEntity findByName(String name) {
+    public Optional<GroupEntity> findByName(String name) {
         return groupRepository.findByName(name);
     }
 
@@ -57,6 +55,24 @@ public class GroupService {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         Page<GroupEntity> groups = groupRepository.findAllByIdInOrderByNameAsc(ids, pageable);
         return groupMapper.toGroupResponse(groups);
+    }
+
+    public GroupMemberDTO addUserToConversation(Long userId, Long groupId) {
+        Optional<GroupEntity> optionalGroup = groupRepository.findById(groupId);
+        if (optionalGroup.isPresent() && optionalGroup.orElse(null).getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
+            return new GroupMemberDTO();
+        }
+        UserEntity user = userService.findById(userId);
+        GroupUser groupUser = new GroupUser();
+        groupUser.setGroupMapping(optionalGroup.orElse(null));
+        groupUser.setUserMapping(user);
+        groupUser.setGroupId(groupId);
+        groupUser.setUserId(userId);
+        groupUser.setRole(0);
+        GroupUser savedGroupUser = groupUserJoinService.save(groupUser);
+        optionalGroup.orElse(null).getGroupUsers().add(savedGroupUser);
+        save(optionalGroup.orElse(null));
+        return new GroupMemberDTO(user.getUsername(), false);
     }
 
     public GroupEntity createGroup(Long userId, String name, String type) {

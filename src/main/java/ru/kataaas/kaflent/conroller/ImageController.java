@@ -18,6 +18,7 @@ import ru.kataaas.kaflent.utils.FileTypeEnum;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin
@@ -58,10 +59,11 @@ public class ImageController {
     public ResponseEntity<?> uploadGroupImage(HttpServletRequest request,
                                               @PathVariable String groupName,
                                               @RequestParam("image") MultipartFile image) {
-        GroupEntity group = groupService.findByName(groupName);
+        Optional<GroupEntity> groupOptional = groupService.findByName(groupName);
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
-            if (group != null) {
+            if (groupOptional.isEmpty()) {
+                GroupEntity group = groupOptional.get();
                 if (userService.checkIfUserIsGroupAdmin(user.getId(), group.getId())) {
                     try {
                         String filename = storageService.store(image, FileTypeEnum.GROUP_IMAGE).getFilename();

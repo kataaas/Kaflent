@@ -8,13 +8,14 @@ import org.springframework.data.repository.query.Param;
 import ru.kataaas.kaflent.entity.GroupEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface GroupRepository extends JpaRepository<GroupEntity, Long> {
 
     @Query(value = "SELECT g.id FROM groups_entities g WHERE g.name = :name", nativeQuery = true)
     Long findIdByName(@Param("name") String name);
 
-    GroupEntity findByName(String name);
+    Optional<GroupEntity> findByName(String name);
 
     Page<GroupEntity> findAllByIdInOrderByNameAsc(List<Long> ids, Pageable pageable);
 

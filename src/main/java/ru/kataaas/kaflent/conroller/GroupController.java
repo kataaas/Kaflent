@@ -17,6 +17,7 @@ import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -44,9 +45,9 @@ public class GroupController {
 
     @GetMapping("/{groupName}")
     public ResponseEntity<?> fetchGroup(@PathVariable String groupName) {
-        GroupEntity group = groupService.findByName(groupName);
-        if (group != null) {
-            return ResponseEntity.ok(groupMapper.toGroupDTO(group));
+        Optional<GroupEntity> group = groupService.findByName(groupName);
+        if (group.isPresent()) {
+            return ResponseEntity.ok(groupMapper.toGroupDTO(group.orElse(null)));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
@@ -58,6 +59,18 @@ public class GroupController {
         Long groupId = groupService.findIdByName(groupName);
         List<Long> ids = groupUserJoinService.getUserIdsByGroupId(groupId);
         return userService.getUsersByIds(ids, pageNo, pageSize);
+    }
+
+    @GetMapping("/{groupName}/user/add")
+    public ResponseEntity<?> addUserToGroup(HttpServletRequest request, @PathVariable String groupName) {
+        Long groupId = groupService.findIdByName(groupName);
+        Long userId = userService.getUserEntityFromRequest(request).getId();
+        try {
+            return ResponseEntity.ok().body(groupService.addUserToConversation(userId, groupId));
+        } catch (Exception e) {
+            log.error("Error when trying to add user to conversation : {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        }
     }
 
     @PostMapping("/group/create")
