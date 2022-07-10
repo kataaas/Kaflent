@@ -22,6 +22,8 @@ public interface GroupUserJoinRepository extends JpaRepository<GroupUser, GroupR
     @Query(value = "SELECT g.group_id FROM group_user g WHERE user_id = :userId", nativeQuery = true)
     List<Long> getGroupIdsByUser(@Param("userId") Long userId);
 
+    void removeByUserIdAndGroupId(Long userId, Long groupId);
+
     int countAllByGroupId(Long groupId);
 
     boolean existsByUserIdAndGroupId(Long userId, Long groupId);
