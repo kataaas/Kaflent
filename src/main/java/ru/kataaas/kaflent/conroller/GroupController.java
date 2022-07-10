@@ -83,23 +83,51 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.CREATED).body(groupMapper.toGroupDTO(group));
     }
 
-//    @DeleteMapping("/{groupName}")
-//    public ResponseEntity<?> deleteGroup(@PathVariable String groupName, HttpServletRequest request) {
-//        Long groupId = groupService.findIdByName(groupName);
-//        UserEntity user = userService.getUserEntityFromRequest(request);
-//        if (user != null) {
-//            if (userService.checkIfUserIsAdminGroup(user.getId(), groupId)
-//                    || userService.checkIfUserIsAdmin(user.getId())) {
-//                try {
-//                    groupService.delete(groupId);
-//                    return ResponseEntity.ok().build();
-//                } catch (Exception e) {
-//                    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-//                }
-//            }
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-//        }
-//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//    }
+    @GetMapping("/{groupName}/user/leave")
+    public ResponseEntity<?> leaveGroup(HttpServletRequest request, @PathVariable String groupName) {
+        return doAction(request, null, groupName, "leave");
+    }
+
+    @GetMapping("/{groupName}/user/grant/{username}")
+    public ResponseEntity<?> grantUserAdminInGroup(HttpServletRequest request,
+                                                   @PathVariable String username,
+                                                   @PathVariable String groupName) {
+        return doAction(request, username, groupName, "grant");
+    }
+
+    @GetMapping("/{groupName}/user/remove/admin/{username}")
+    public ResponseEntity<?> removeAdminUserFromGroup(HttpServletRequest request,
+                                                   @PathVariable String username,
+                                                   @PathVariable String groupName) {
+        return doAction(request, username, groupName, "removeAdmin");
+    }
+
+    private ResponseEntity<?> doAction(HttpServletRequest request, String username, String groupName, String action) {
+        UserEntity user = userService.getUserEntityFromRequest(request);
+        Long groupId = groupService.findIdByName(groupName);
+        if (user != null) {
+            if (action.equals("leave")) {
+                groupUserJoinService.removeUserFromGroup(user.getId(), groupId);
+                return ResponseEntity.ok(username + " has left the group");
+            }
+            if (userService.checkIfUserIsGroupAdmin(user.getId(), groupId)) {
+                try {
+                    Long userIdDoAction = userService.findIdByUsername(username);
+                    if (action.equals("grant")) {
+                        groupUserJoinService.grantUserAdminInGroup(userIdDoAction, groupId);
+                        return ResponseEntity.ok().body(username + " has been granted administrator");
+                    }
+                    if (action.equals("removeAdmin")) {
+                        groupUserJoinService.removeUserAdminFromGroup(userIdDoAction, groupId);
+                        return ResponseEntity.ok(username + " has been removed from administrators.");
+                    }
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+                }
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
 }
