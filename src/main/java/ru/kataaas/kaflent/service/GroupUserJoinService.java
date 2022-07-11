@@ -63,7 +63,14 @@ public class GroupUserJoinService {
     }
 
     public boolean checkIfUserIsAuthorizedInGroup(Long userId, Long groupId) {
-        return groupUserJoinRepository.existsByUserIdAndGroupId(userId, groupId);
+        return groupUserJoinRepository.existsByUserIdAndGroupIdAndApplicationAccepted(userId, groupId, true);
+    }
+
+    public boolean checkIfUserIsNonBannedInGroup(Long userId, Long groupId) {
+        GroupUser groupUser = findByUserIdAndGroupId(userId, groupId);
+        if (groupUser != null)
+            return groupUser.isUserNonBanned();
+        return true;
     }
 
 }

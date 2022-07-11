@@ -26,7 +26,7 @@ public interface GroupUserJoinRepository extends JpaRepository<GroupUser, GroupR
 
     int countAllByGroupId(Long groupId);
 
-    boolean existsByUserIdAndGroupId(Long userId, Long groupId);
+    boolean existsByUserIdAndGroupIdAndApplicationAccepted(Long userId, Long groupId, boolean accepted);
 
     void deleteAllByGroupId(Long groupId);
 }

@@ -48,8 +48,7 @@ public class UserEntity implements Serializable {
 
     @Column(name = "enabled")
     private boolean enabled;
-
-
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

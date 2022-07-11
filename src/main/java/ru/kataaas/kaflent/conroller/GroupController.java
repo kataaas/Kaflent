@@ -13,6 +13,7 @@ import ru.kataaas.kaflent.payload.UserResponse;
 import ru.kataaas.kaflent.service.GroupService;
 import ru.kataaas.kaflent.service.GroupUserJoinService;
 import ru.kataaas.kaflent.service.UserService;
+import ru.kataaas.kaflent.utils.GroupTypeEnum;
 import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,10 +45,21 @@ public class GroupController {
     }
 
     @GetMapping("/{groupName}")
-    public ResponseEntity<?> fetchGroup(@PathVariable String groupName) {
+    public ResponseEntity<?> fetchGroup(@PathVariable String groupName, HttpServletRequest request) {
         Optional<GroupEntity> group = groupService.findByName(groupName);
+        UserEntity user = userService.getUserEntityFromRequest(request);
         if (group.isPresent()) {
-            return ResponseEntity.ok(groupMapper.toGroupDTO(group.orElse(null)));
+            if (groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), group.orElse(null).getId())) {
+                if (group.orElse(null).getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
+                    return ResponseEntity.ok(groupMapper.toGroupDTO(group.orElse(null)));
+                }
+                if (group.orElse(null).getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
+                    if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), group.orElse(null).getId())) {
+                        return ResponseEntity.ok(groupMapper.toGroupDTO(group.orElse(null)));
+                    }
+                }
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
@@ -66,7 +78,7 @@ public class GroupController {
         Long groupId = groupService.findIdByName(groupName);
         Long userId = userService.getUserEntityFromRequest(request).getId();
         try {
-            return ResponseEntity.ok().body(groupService.addUserToConversation(userId, groupId));
+            return ResponseEntity.ok().body(groupService.addUserToGroup(userId, groupId));
         } catch (Exception e) {
             log.error("Error when trying to add user to conversation : {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();

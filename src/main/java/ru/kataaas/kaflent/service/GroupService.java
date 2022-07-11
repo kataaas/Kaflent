@@ -57,22 +57,34 @@ public class GroupService {
         return groupMapper.toGroupResponse(groups);
     }
 
-    public GroupMemberDTO addUserToConversation(Long userId, Long groupId) {
+    public GroupMemberDTO addUserToGroup(Long userId, Long groupId) {
         Optional<GroupEntity> optionalGroup = groupRepository.findById(groupId);
-        if (optionalGroup.isPresent() && optionalGroup.orElse(null).getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
-            return new GroupMemberDTO();
+        if (optionalGroup.isPresent()) {
+            if (!groupUserJoinService.checkIfUserIsAuthorizedInGroup(userId, groupId)) {
+                UserEntity user = userService.findById(userId);
+                GroupUser groupUser = new GroupUser();
+                groupUser.setGroupMapping(optionalGroup.orElse(null));
+                groupUser.setUserMapping(user);
+                groupUser.setGroupId(groupId);
+                groupUser.setUserId(userId);
+                groupUser.setRole(0);
+                groupUser.setUserNonBanned(true);
+                if (optionalGroup.orElse(null).getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
+                    groupUser.setApplicationAccepted(true);
+                    GroupUser savedGroupUser = groupUserJoinService.save(groupUser);
+                    optionalGroup.orElse(null).getGroupUsers().add(savedGroupUser);
+                    save(optionalGroup.orElse(null));
+                    return new GroupMemberDTO(user.getUsername(), false);
+                } else {
+                    groupUser.setApplicationAccepted(false);
+                    GroupUser savedGroupUser = groupUserJoinService.save(groupUser);
+                    optionalGroup.orElse(null).getGroupUsers().add(savedGroupUser);
+                    save(optionalGroup.orElse(null));
+                }
+                return new GroupMemberDTO();
+            }
         }
-        UserEntity user = userService.findById(userId);
-        GroupUser groupUser = new GroupUser();
-        groupUser.setGroupMapping(optionalGroup.orElse(null));
-        groupUser.setUserMapping(user);
-        groupUser.setGroupId(groupId);
-        groupUser.setUserId(userId);
-        groupUser.setRole(0);
-        GroupUser savedGroupUser = groupUserJoinService.save(groupUser);
-        optionalGroup.orElse(null).getGroupUsers().add(savedGroupUser);
-        save(optionalGroup.orElse(null));
-        return new GroupMemberDTO(user.getUsername(), false);
+        return null;
     }
 
     public GroupEntity createGroup(Long userId, String name, String type) {
@@ -87,6 +99,8 @@ public class GroupService {
         groupUser.setRole(1);
         groupUser.setGroupMapping(group);
         groupUser.setUserMapping(user);
+        groupUser.setApplicationAccepted(true);
+        groupUser.setUserNonBanned(true);
         groupUserJoinService.save(groupUser);
         return savedGroup;
     }

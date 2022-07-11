@@ -32,6 +32,10 @@ public class GroupUser implements Serializable {
 
     private int role;
 
+    private boolean userNonBanned;
+
+    private boolean applicationAccepted;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
