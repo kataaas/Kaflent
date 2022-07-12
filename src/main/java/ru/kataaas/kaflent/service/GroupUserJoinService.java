@@ -55,7 +55,11 @@ public class GroupUserJoinService {
     }
 
     public void removeUserFromGroup(Long userId, Long groupId) {
-        groupUserJoinRepository.removeByUserIdAndGroupId(userId, groupId);
+        GroupUser groupUser = findByUserIdAndGroupId(userId, groupId);
+        if (groupUser != null) {
+            groupUser.setApplicationAccepted(false);
+            save(groupUser);
+        }
     }
 
     public int countUsersByGroup(Long groupId) {

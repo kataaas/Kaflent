@@ -7,21 +7,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.kataaas.kaflent.entity.FileEntity;
+import ru.kataaas.kaflent.entity.GroupEntity;
 import ru.kataaas.kaflent.payload.UpdateContentDTO;
 import ru.kataaas.kaflent.payload.LightPostDTO;
 import ru.kataaas.kaflent.payload.PostResponse;
 import ru.kataaas.kaflent.entity.PostEntity;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.PostMapper;
-import ru.kataaas.kaflent.service.GroupService;
-import ru.kataaas.kaflent.service.PostService;
-import ru.kataaas.kaflent.service.StorageService;
-import ru.kataaas.kaflent.service.UserService;
+import ru.kataaas.kaflent.service.*;
 import ru.kataaas.kaflent.utils.FileTypeEnum;
+import ru.kataaas.kaflent.utils.GroupTypeEnum;
 import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -38,17 +38,21 @@ public class PostController {
 
     private final StorageService storageService;
 
+    private final GroupUserJoinService groupUserJoinService;
+
     @Autowired
     public PostController(PostMapper postMapper,
                           PostService postService,
                           UserService userService,
                           GroupService groupService,
-                          StorageService storageService) {
+                          StorageService storageService,
+                          GroupUserJoinService groupUserJoinService) {
         this.postMapper = postMapper;
         this.postService = postService;
         this.userService = userService;
         this.groupService = groupService;
         this.storageService = storageService;
+        this.groupUserJoinService = groupUserJoinService;
     }
 
     @PostMapping("/{groupName}/posts")
@@ -84,13 +88,32 @@ public class PostController {
     }
 
     @GetMapping("/{groupName}/posts")
-    public PostResponse fetchPostsByGroup(
+    public ResponseEntity<?> fetchPostsByGroup(
+            HttpServletRequest request,
             @PathVariable String groupName,
             @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_POSTS, required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_POSTS, required = false) int pageSize) {
-        Long groupId = groupService.findIdByName(groupName);
-        Page<PostEntity> posts = postService.getAllPostsByGroupId(groupId, pageNo, pageSize);
-        return postMapper.toPostResponse(posts);
+        UserEntity user = userService.getUserEntityFromRequest(request);
+        Optional<GroupEntity> group = groupService.findByName(groupName);
+        if (user != null) {
+            if (group.isPresent()) {
+                if (groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), group.get().getId())) {
+                    PostResponse postResponse = postService.getAllPostsByGroupId(group.get().getId(), pageNo, pageSize);
+                    if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
+                        return ResponseEntity.ok(postResponse);
+                    }
+                    if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
+                        if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), group.get().getId())) {
+                            return ResponseEntity.ok(postResponse);
+                        }
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not in a group.");
+                    }
+                }
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access to the group is denied.");
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Group not found.");
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping("/{groupName}/posts/{id}")

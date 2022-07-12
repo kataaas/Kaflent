@@ -52,9 +52,10 @@ public class PostService {
         return postMapper.toPostResponse(posts);
     }
 
-    public Page<PostEntity> getAllPostsByGroupId(Long groupId, int pageNo, int pageSize) {
+    public PostResponse getAllPostsByGroupId(Long groupId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
-        return postRepository.findAllByGroupIdOrderByCreatedAtDesc(groupId, pageable);
+        Page<PostEntity> posts = postRepository.findAllByGroupIdOrderByCreatedAtDesc(groupId, pageable);
+        return postMapper.toPostResponse(posts);
     }
 
 }
