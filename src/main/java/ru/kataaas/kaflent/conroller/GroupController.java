@@ -9,7 +9,6 @@ import ru.kataaas.kaflent.payload.CreateGroupDTO;
 import ru.kataaas.kaflent.entity.GroupEntity;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.GroupMapper;
-import ru.kataaas.kaflent.payload.UserResponse;
 import ru.kataaas.kaflent.service.GroupService;
 import ru.kataaas.kaflent.service.GroupUserJoinService;
 import ru.kataaas.kaflent.service.UserService;
@@ -49,40 +48,60 @@ public class GroupController {
         Optional<GroupEntity> group = groupService.findByName(groupName);
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (group.isPresent()) {
-            if (groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), group.orElse(null).getId())) {
-                if (group.orElse(null).getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
-                    return ResponseEntity.ok(groupMapper.toGroupDTO(group.orElse(null)));
+            if (groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), group.get().getId())) {
+                if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
+                    return ResponseEntity.ok(groupMapper.toGroupDTO(group.get()));
                 }
-                if (group.orElse(null).getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
-                    if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), group.orElse(null).getId())) {
-                        return ResponseEntity.ok(groupMapper.toGroupDTO(group.orElse(null)));
+                if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
+                    if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), group.get().getId())) {
+                        return ResponseEntity.ok(groupMapper.toGroupDTO(group.get()));
                     }
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not in a group.");
                 }
             }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access to the group is denied.");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @GetMapping("/{groupName}/users")
-    public UserResponse fetchUsersInGroup(@PathVariable String groupName,
+    public ResponseEntity<?> fetchUsersInGroup(HttpServletRequest request,
+                                          @PathVariable String groupName,
                                           @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_USERS, required = false) int pageNo,
                                           @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_USERS, required = false) int pageSize) {
-        Long groupId = groupService.findIdByName(groupName);
-        List<Long> ids = groupUserJoinService.getUserIdsByGroupId(groupId);
-        return userService.getUsersByIds(ids, pageNo, pageSize);
+        Optional<GroupEntity> group = groupService.findByName(groupName);
+        UserEntity user = userService.getUserEntityFromRequest(request);
+        if (group.isPresent()) {
+            List<Long> ids = groupUserJoinService.getUserIdsByGroupId(group.get().getId());
+            if (groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), group.get().getId())) {
+                if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
+                    return ResponseEntity.ok(userService.getUsersByIds(ids, pageNo, pageSize));
+                }
+                if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
+                    if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), group.get().getId())) {
+                        return ResponseEntity.ok(userService.getUsersByIds(ids, pageNo, pageSize));
+                    }
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not in a group.");
+                }
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access to the group is denied.");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @GetMapping("/{groupName}/user/add")
     public ResponseEntity<?> addUserToGroup(HttpServletRequest request, @PathVariable String groupName) {
         Long groupId = groupService.findIdByName(groupName);
-        Long userId = userService.getUserEntityFromRequest(request).getId();
-        try {
-            return ResponseEntity.ok().body(groupService.addUserToGroup(userId, groupId));
-        } catch (Exception e) {
-            log.error("Error when trying to add user to conversation : {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        UserEntity user = userService.getUserEntityFromRequest(request);
+        if (groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), groupId)) {
+            try {
+                return ResponseEntity.ok().body(groupService.addUserToGroup(user.getId(), groupId));
+            } catch (Exception e) {
+                log.error("Error when trying to add user to conversation : {}", e.getMessage());
+                return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+            }
         }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access to the group is denied.");
     }
 
     @PostMapping("/group/create")
@@ -119,15 +138,18 @@ public class GroupController {
         Long groupId = groupService.findIdByName(groupName);
         if (user != null) {
             if (action.equals("leave")) {
-                groupUserJoinService.removeUserFromGroup(user.getId(), groupId);
-                return ResponseEntity.ok(username + " has left the group");
+                if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), groupId)) {
+                    groupUserJoinService.removeUserFromGroup(user.getId(), groupId);
+                    return ResponseEntity.ok(username + " has left the group.");
+                }
+                return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("You are not in a group.");
             }
             if (userService.checkIfUserIsGroupAdmin(user.getId(), groupId)) {
                 try {
                     Long userIdDoAction = userService.findIdByUsername(username);
                     if (action.equals("grant")) {
                         groupUserJoinService.grantUserAdminInGroup(userIdDoAction, groupId);
-                        return ResponseEntity.ok().body(username + " has been granted administrator");
+                        return ResponseEntity.ok(username + " has been granted administrator.");
                     }
                     if (action.equals("removeAdmin")) {
                         groupUserJoinService.removeUserAdminFromGroup(userIdDoAction, groupId);
