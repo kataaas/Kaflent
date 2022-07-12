@@ -88,11 +88,10 @@ public class PostController {
     }
 
     @GetMapping("/{groupName}/posts")
-    public ResponseEntity<?> fetchPostsByGroup(
-            HttpServletRequest request,
-            @PathVariable String groupName,
-            @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_POSTS, required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_POSTS, required = false) int pageSize) {
+    public ResponseEntity<?> fetchPostsByGroup(HttpServletRequest request,
+                                               @PathVariable String groupName,
+                                               @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_POSTS, required = false) int pageNo,
+                                               @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_POSTS, required = false) int pageSize) {
         UserEntity user = userService.getUserEntityFromRequest(request);
         Optional<GroupEntity> group = groupService.findByName(groupName);
         if (user != null) {

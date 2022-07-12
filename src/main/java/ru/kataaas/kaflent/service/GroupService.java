@@ -47,6 +47,10 @@ public class GroupService {
         return groupRepository.findIdByName(name);
     }
 
+    public Optional<GroupEntity> findById(Long id) {
+        return groupRepository.findById(id);
+    }
+
     public Optional<GroupEntity> findByName(String name) {
         return groupRepository.findByName(name);
     }
