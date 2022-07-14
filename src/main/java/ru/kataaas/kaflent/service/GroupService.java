@@ -79,14 +79,14 @@ public class GroupService {
                     GroupUser savedGroupUser = groupUserJoinService.save(groupUser);
                     optionalGroup.orElse(null).getGroupUsers().add(savedGroupUser);
                     save(optionalGroup.orElse(null));
-                    return new GroupMemberDTO(user.getUsername(), false);
+                    return new GroupMemberDTO(user.getUsername(), false, true);
                 } else {
                     groupUser.setApplicationAccepted(false);
                     GroupUser savedGroupUser = groupUserJoinService.save(groupUser);
                     optionalGroup.orElse(null).getGroupUsers().add(savedGroupUser);
                     save(optionalGroup.orElse(null));
                 }
-                return new GroupMemberDTO();
+                return new GroupMemberDTO(user.getUsername(), false, false);
             }
         }
         return null;

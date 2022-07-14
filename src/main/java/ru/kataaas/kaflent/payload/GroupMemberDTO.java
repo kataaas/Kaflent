@@ -13,4 +13,6 @@ public class GroupMemberDTO {
 
     private boolean isAdmin;
 
+    private boolean applicationAccepted;
+
 }

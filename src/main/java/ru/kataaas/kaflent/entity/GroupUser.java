@@ -1,14 +1,14 @@
 package ru.kataaas.kaflent.entity;
 
-import lombok.Data;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "group_user")
 @IdClass(GroupRoleKey.class)
