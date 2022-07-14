@@ -30,6 +30,10 @@ public class GroupUserJoinService {
         return groupUserJoinRepository.getUserIdsInGroup(groupId);
     }
 
+    public List<Long> getUserIdsByRequestToGroup(Long groupId) {
+        return groupUserJoinRepository.getUserIdsByRequestToGroup(groupId);
+    }
+
     public List<Long> getGroupIdsByUserId(Long userId) {
         return groupUserJoinRepository.getGroupIdsByUser(userId);
     }
