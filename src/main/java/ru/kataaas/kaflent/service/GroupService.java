@@ -9,6 +9,7 @@ import ru.kataaas.kaflent.entity.GroupEntity;
 import ru.kataaas.kaflent.entity.GroupUser;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.GroupMapper;
+import ru.kataaas.kaflent.payload.GroupDTO;
 import ru.kataaas.kaflent.payload.GroupMemberDTO;
 import ru.kataaas.kaflent.payload.GroupResponse;
 import ru.kataaas.kaflent.repository.GroupRepository;
@@ -91,13 +92,14 @@ public class GroupService {
         return null;
     }
 
-    public GroupEntity createGroup(Long userId, String name, String type) {
+    public GroupDTO createGroup(Long userId, String name, String type) {
         GroupUser groupUser = new GroupUser();
+        UserEntity user = userService.findById(userId);
         GroupEntity group = new GroupEntity();
         group.setName(name);
         group.setGroupTypeEnum(GroupTypeEnum.valueOf(type.toUpperCase()));
         GroupEntity savedGroup = groupRepository.save(group);
-        UserEntity user = userService.findById(userId);
+
         groupUser.setGroupId(savedGroup.getId());
         groupUser.setUserId(userId);
         groupUser.setRole(1);
@@ -105,8 +107,10 @@ public class GroupService {
         groupUser.setUserMapping(user);
         groupUser.setApplicationAccepted(true);
         groupUser.setUserNonBanned(true);
+        savedGroup.getUserEntities().add(user);
         groupUserJoinService.save(groupUser);
-        return savedGroup;
+
+        return groupMapper.toGroupDTO(savedGroup);
     }
 
     public boolean checkIfGroupNameAlreadyUsed(String name) {

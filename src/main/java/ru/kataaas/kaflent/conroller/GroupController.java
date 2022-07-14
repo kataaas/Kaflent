@@ -104,16 +104,6 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access to the group is denied.");
     }
 
-    @PostMapping("/group/create")
-    public ResponseEntity<?> createGroup(@RequestBody CreateGroupDTO groupDTO, HttpServletRequest request) {
-        if (groupService.checkIfGroupNameAlreadyUsed(groupDTO.getName())) {
-            return ResponseEntity.badRequest().body("Group name: " + groupDTO.getName() + " is already used! Please try again");
-        }
-        UserEntity user = userService.getUserEntityFromRequest(request);
-        GroupEntity group = groupService.createGroup(user.getId(), groupDTO.getName(), groupDTO.getType());
-        return ResponseEntity.status(HttpStatus.CREATED).body(groupMapper.toGroupDTO(group));
-    }
-
     @GetMapping("/{groupName}/user/leave")
     public ResponseEntity<?> leaveGroup(HttpServletRequest request, @PathVariable String groupName) {
         return doAction(request, null, groupName, "leave");
@@ -162,6 +152,19 @@ public class GroupController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @PostMapping("/group/create")
+    public ResponseEntity<?> createGroup(@RequestBody CreateGroupDTO groupDTO, HttpServletRequest request) {
+        UserEntity user = userService.getUserEntityFromRequest(request);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (groupService.checkIfGroupNameAlreadyUsed(groupDTO.getName())) {
+            return ResponseEntity.badRequest().body("Group name: " + groupDTO.getName() + " is already used! Please try again");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(groupService.createGroup(user.getId(), groupDTO.getName(), groupDTO.getType()));
     }
 
 }
