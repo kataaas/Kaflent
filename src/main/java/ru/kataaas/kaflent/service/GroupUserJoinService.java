@@ -2,6 +2,7 @@ package ru.kataaas.kaflent.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.kataaas.kaflent.entity.GroupRoleKey;
 import ru.kataaas.kaflent.entity.GroupUser;
 import ru.kataaas.kaflent.repository.GroupUserJoinRepository;
@@ -20,6 +21,11 @@ public class GroupUserJoinService {
 
     public GroupUser save(GroupUser groupUser) {
         return groupUserJoinRepository.save(groupUser);
+    }
+
+    @Transactional
+    public void deleteByUserIdAndGroupId(Long userId, Long groupId) {
+        groupUserJoinRepository.deleteByUserIdAndGroupId(userId, groupId);
     }
 
     public List<GroupUser> getAllByUserId(Long userId) {

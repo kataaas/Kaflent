@@ -31,4 +31,6 @@ public interface GroupUserJoinRepository extends JpaRepository<GroupUser, GroupR
 
     void deleteAllByGroupId(Long groupId);
 
+    void deleteByUserIdAndGroupId(Long userId, Long groupId);
+
 }

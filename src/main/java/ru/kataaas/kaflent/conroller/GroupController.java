@@ -154,36 +154,51 @@ public class GroupController {
         return doAction(request, username, groupName, "accept");
     }
 
+    @GetMapping("/{groupName}/users/request/{username}/reject")
+    public ResponseEntity<?> rejectRequestToGroup(HttpServletRequest request,
+                                                  @PathVariable String username,
+                                                  @PathVariable String groupName) {
+        return doAction(request, username, groupName, "reject");
+    }
+
     private ResponseEntity<?> doAction(HttpServletRequest request, String username, String groupName, String action) {
         UserEntity user = userService.getUserEntityFromRequest(request);
         Long groupId = groupService.findIdByName(groupName);
         if (user != null) {
-            if (action.equals("leave")) {
-                if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), groupId)) {
+            if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), groupId)) {
+                if (action.equals("leave")) {
                     groupUserJoinService.removeUserFromGroup(user.getId(), groupId);
                     return ResponseEntity.ok(username + " has left the group.");
                 }
-                return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("You are not in a group.");
-            }
-            if (userService.checkIfUserIsGroupAdmin(user.getId(), groupId)) {
-                try {
-                    Long userIdDoAction = userService.findIdByUsername(username);
-                    if (action.equals("grant")) {
-                        groupUserJoinService.grantUserAdminInGroup(userIdDoAction, groupId);
-                        return ResponseEntity.ok(username + " has been granted administrator.");
+                Long userIdDoAction = userService.findIdByUsername(username);
+                if (userService.checkIfUserIsGroupAdmin(user.getId(), groupId)) {
+                    try {
+                        if (groupUserJoinService.checkIfUserIsNonBannedInGroup(userIdDoAction, groupId)) {
+                            if (action.equals("grant")) {
+                                groupUserJoinService.grantUserAdminInGroup(userIdDoAction, groupId);
+                                return ResponseEntity.ok(username + " has been granted administrator.");
+                            }
+                            if (action.equals("removeAdmin")) {
+                                groupUserJoinService.removeUserAdminFromGroup(userIdDoAction, groupId);
+                                return ResponseEntity.ok(username + " has been removed from administrators.");
+                            }
+                            if (action.equals("accept")) {
+                                groupUserJoinService.acceptUserToGroup(userIdDoAction, groupId);
+                                return ResponseEntity.ok(username + " was accepted into the group.");
+                            }
+                            if (action.equals("reject")) {
+                                groupUserJoinService.deleteByUserIdAndGroupId(userIdDoAction, groupId);
+                                return ResponseEntity.ok("The application was rejected.");
+                            }
+                        }
+                        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(username + " is banned.");
+                    } catch (Exception e) {
+                        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
                     }
-                    if (action.equals("removeAdmin")) {
-                        groupUserJoinService.removeUserAdminFromGroup(userIdDoAction, groupId);
-                        return ResponseEntity.ok(username + " has been removed from administrators.");
-                    }
-                    if (action.equals("accept")) {
-                        groupUserJoinService.acceptUserToGroup(userIdDoAction, groupId);
-                    }
-                } catch (Exception e) {
-                    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
                 }
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("You are not in a group.");
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
