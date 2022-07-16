@@ -16,18 +16,19 @@ public interface GroupUserJoinRepository extends JpaRepository<GroupUser, GroupR
 
     List<GroupUser> getAllByUserId(Long userId);
 
-    @Query(value = "SELECT g.user_id FROM group_user g WHERE group_id = :groupId AND application_accepted = true AND user_non_banned = true", nativeQuery = true)
+    @Query(value = "SELECT g.user_id FROM group_user g WHERE group_id = :groupId AND in_group = true AND user_non_banned = true", nativeQuery = true)
     List<Long> getUserIdsInGroup(@Param("groupId") Long groupId);
 
-    @Query(value = "SELECT g.user_id FROM group_user g WHERE group_id = :groupId AND application_accepted = false AND user_non_banned = true", nativeQuery = true)
+    @Query(value = "SELECT g.user_id FROM group_user g WHERE group_id = :groupId AND in_group = false AND user_non_banned = true", nativeQuery = true)
     List<Long> getUserIdsByRequestToGroup(@Param("groupId") Long groupId);
 
-    @Query(value = "SELECT g.group_id FROM group_user g WHERE user_id = :userId AND application_accepted = true AND user_non_banned = true", nativeQuery = true)
+    @Query(value = "SELECT g.group_id FROM group_user g WHERE user_id = :userId AND in_group = true AND user_non_banned = true", nativeQuery = true)
     List<Long> getGroupIdsByUser(@Param("userId") Long userId);
 
     int countAllByGroupId(Long groupId);
 
-    boolean existsByUserIdAndGroupIdAndApplicationAccepted(Long userId, Long groupId, boolean accepted);
+    boolean existsByUserIdAndGroupIdAndInGroup(Long userId, Long groupId, boolean inGroup);
 
     void deleteAllByGroupId(Long groupId);
+
 }

@@ -62,7 +62,7 @@ public class ImageController {
         Optional<GroupEntity> groupOptional = groupService.findByName(groupName);
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
-            if (groupOptional.isEmpty()) {
+            if (groupOptional.isPresent()) {
                 GroupEntity group = groupOptional.get();
                 if (userService.checkIfUserIsGroupAdmin(user.getId(), group.getId())) {
                     try {

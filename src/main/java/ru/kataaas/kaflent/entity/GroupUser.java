@@ -32,6 +32,8 @@ public class GroupUser implements Serializable {
 
     private int role;
 
+    private boolean inGroup;
+
     private boolean userNonBanned;
 
     private boolean applicationAccepted;

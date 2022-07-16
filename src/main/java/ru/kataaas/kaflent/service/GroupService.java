@@ -76,17 +76,18 @@ public class GroupService {
                 groupUser.setUserNonBanned(true);
                 if (optionalGroup.orElse(null).getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
                     groupUser.setApplicationAccepted(true);
+                    groupUser.setInGroup(true);
                     GroupUser savedGroupUser = groupUserJoinService.save(groupUser);
                     optionalGroup.orElse(null).getGroupUsers().add(savedGroupUser);
                     save(optionalGroup.orElse(null));
-                    return new GroupMemberDTO(user.getUsername(), false, true);
+                    return new GroupMemberDTO(user.getUsername(), false, true, true);
                 } else {
                     groupUser.setApplicationAccepted(false);
                     GroupUser savedGroupUser = groupUserJoinService.save(groupUser);
                     optionalGroup.orElse(null).getGroupUsers().add(savedGroupUser);
                     save(optionalGroup.orElse(null));
                 }
-                return new GroupMemberDTO(user.getUsername(), false, false);
+                return new GroupMemberDTO(user.getUsername(), false, false, false);
             }
         }
         return null;
@@ -105,6 +106,7 @@ public class GroupService {
         groupUser.setRole(1);
         groupUser.setGroupMapping(group);
         groupUser.setUserMapping(user);
+        groupUser.setInGroup(true);
         groupUser.setApplicationAccepted(true);
         groupUser.setUserNonBanned(true);
         savedGroup.getUserEntities().add(user);

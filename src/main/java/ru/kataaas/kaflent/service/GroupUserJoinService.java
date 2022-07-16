@@ -61,7 +61,16 @@ public class GroupUserJoinService {
     public void removeUserFromGroup(Long userId, Long groupId) {
         GroupUser groupUser = findByUserIdAndGroupId(userId, groupId);
         if (groupUser != null) {
-            groupUser.setApplicationAccepted(false);
+            groupUser.setInGroup(false);
+            save(groupUser);
+        }
+    }
+
+    public void acceptUserToGroup(Long userId, Long groupId) {
+        GroupUser groupUser = findByUserIdAndGroupId(userId, groupId);
+        if (groupUser != null) {
+            groupUser.setApplicationAccepted(true);
+            groupUser.setInGroup(true);
             save(groupUser);
         }
     }
@@ -71,7 +80,7 @@ public class GroupUserJoinService {
     }
 
     public boolean checkIfUserIsAuthorizedInGroup(Long userId, Long groupId) {
-        return groupUserJoinRepository.existsByUserIdAndGroupIdAndApplicationAccepted(userId, groupId, true);
+        return groupUserJoinRepository.existsByUserIdAndGroupIdAndInGroup(userId, groupId, true);
     }
 
     public boolean checkIfUserIsNonBannedInGroup(Long userId, Long groupId) {
