@@ -48,6 +48,22 @@ public class GroupUserJoinService {
         return groupUserJoinRepository.findByUserIdAndGroupId(userId, groupId);
     }
 
+    public void banUserInGroup(Long userId, Long groupId) {
+        setUserBannedInGroup(userId, groupId, false);
+    }
+
+    public void unbanUserInGroup(Long userId, Long groupId) {
+        setUserBannedInGroup(userId, groupId, true);
+    }
+
+    private void setUserBannedInGroup(Long userId, Long groupId, boolean accountNonBanned) {
+        GroupUser groupUser = groupUserJoinRepository.findByUserIdAndGroupId(userId, groupId);
+        if (groupUser != null) {
+            groupUser.setUserNonBanned(accountNonBanned);
+            groupUserJoinRepository.save(groupUser);
+        }
+    }
+
     public void grantUserAdminInGroup(Long userId, Long groupId) {
         setUserRoleInGroup(userId, groupId, 1);
     }

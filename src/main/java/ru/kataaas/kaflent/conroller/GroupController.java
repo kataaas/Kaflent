@@ -17,6 +17,7 @@ import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -133,6 +134,20 @@ public class GroupController {
         return doAction(request, null, groupName, "leave");
     }
 
+    @GetMapping("/{groupName}/users/{username}/ban")
+    public ResponseEntity<?> banUserInGroup(HttpServletRequest request,
+                                            @PathVariable String username,
+                                            @PathVariable String groupName) {
+        return doAction(request, username, groupName, "ban");
+    }
+
+    @GetMapping("/{groupName}/users/{username}/unban")
+    public ResponseEntity<?> unbanUserInGroup(HttpServletRequest request,
+                                            @PathVariable String username,
+                                            @PathVariable String groupName) {
+        return doAction(request, username, groupName, "unban");
+    }
+
     @GetMapping("/{groupName}/user/grant/{username}")
     public ResponseEntity<?> grantUserAdminInGroup(HttpServletRequest request,
                                                    @PathVariable String username,
@@ -171,9 +186,17 @@ public class GroupController {
                     return ResponseEntity.ok(username + " has left the group.");
                 }
                 Long userIdDoAction = userService.findIdByUsername(username);
-                if (userService.checkIfUserIsGroupAdmin(user.getId(), groupId)) {
+                if (userService.checkIfUserIsGroupAdmin(user.getId(), groupId) && !user.getId().equals(userIdDoAction)) {
+                    if (action.equals("unban")) {
+                        groupUserJoinService.unbanUserInGroup(userIdDoAction, groupId);
+                        return ResponseEntity.ok(username + " was unblocked.");
+                    }
                     try {
                         if (groupUserJoinService.checkIfUserIsNonBannedInGroup(userIdDoAction, groupId)) {
+                            if (action.equals("ban")) {
+                                groupUserJoinService.banUserInGroup(userIdDoAction, groupId);
+                                return ResponseEntity.ok(username + " was banned.");
+                            }
                             if (action.equals("grant")) {
                                 groupUserJoinService.grantUserAdminInGroup(userIdDoAction, groupId);
                                 return ResponseEntity.ok(username + " has been granted administrator.");
