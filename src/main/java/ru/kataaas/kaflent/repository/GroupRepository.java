@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.kataaas.kaflent.entity.GroupEntity;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 

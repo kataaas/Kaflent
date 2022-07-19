@@ -19,7 +19,11 @@ import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -72,10 +76,11 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public UserResponse getUsersByIds(List<Long> ids, int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<UserEntity> users = userRepository.findAllByIdInOrderByUsernameAsc(ids, pageable);
-        return userMapper.toUserResponse(users);
+    public UserResponse getUsersByIds(Page<BigInteger> pageIds) {
+        List<Long> ids = new ArrayList<>();
+        pageIds.getContent().forEach(id -> ids.add(id.longValue()));
+        List<UserEntity> users = userRepository.findAllByIdIsInOrderByUsernameAsc(ids);
+        return userMapper.toUserResponse(users, pageIds.getNumber(), pageIds.getSize(), pageIds.getTotalElements(), pageIds.getTotalPages(), pageIds.isLast());
     }
 
     public boolean checkIfUsernameAlreadyUsed(String username) {

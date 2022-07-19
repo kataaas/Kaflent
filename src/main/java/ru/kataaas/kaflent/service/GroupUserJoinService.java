@@ -1,12 +1,16 @@
 package ru.kataaas.kaflent.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kataaas.kaflent.entity.GroupRoleKey;
 import ru.kataaas.kaflent.entity.GroupUser;
 import ru.kataaas.kaflent.repository.GroupUserJoinRepository;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Service
@@ -32,16 +36,24 @@ public class GroupUserJoinService {
         return groupUserJoinRepository.getAllByUserId(userId);
     }
 
-    public List<Long> getUserIdsByGroupId(Long groupId) {
-        return groupUserJoinRepository.getUserIdsInGroup(groupId);
+    public Page<BigInteger> getUserIdsByGroupId(Long groupId, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return groupUserJoinRepository.getUserIdsInGroup(groupId, pageable);
     }
 
-    public List<Long> getUserIdsByRequestToGroup(Long groupId) {
-        return groupUserJoinRepository.getUserIdsByRequestToGroup(groupId);
+    public Page<BigInteger> getUserIdsByRequestToGroup(Long groupId, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return groupUserJoinRepository.getUserIdsByRequestToGroup(groupId, pageable);
     }
 
-    public List<Long> getGroupIdsByUserId(Long userId) {
-        return groupUserJoinRepository.getGroupIdsByUser(userId);
+    public Page<BigInteger> getBannedUserIdsInGroup(Long groupId, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return groupUserJoinRepository.getBannedUserIdsInGroup(groupId, pageable);
+    }
+
+    public Page<BigInteger> getGroupIdsByUserId(Long userId, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return groupUserJoinRepository.getGroupIdsByUser(userId, pageable);
     }
 
     public GroupUser findByUserIdAndGroupId(Long userId, Long groupId) {

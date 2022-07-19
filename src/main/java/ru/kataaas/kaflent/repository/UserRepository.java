@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     UserEntity findByUsername(String username);
 
-    Page<UserEntity> findAllByIdInOrderByUsernameAsc(List<Long> ids, Pageable pageable);
+    List<UserEntity> findAllByIdIsInOrderByUsernameAsc(List<Long> ids);
 
     boolean existsByUsername(String username);
 

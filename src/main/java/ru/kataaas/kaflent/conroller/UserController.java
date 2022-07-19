@@ -2,6 +2,7 @@ package ru.kataaas.kaflent.conroller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import ru.kataaas.kaflent.service.UserService;
 import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
@@ -69,8 +71,8 @@ public class UserController {
                                            @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_GROUPS, required = false) int pageNo,
                                            @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_GROUPS, required = false) int pageSize) {
         Long userId = userService.findIdByUsername(username);
-        List<Long> ids = groupUserJoinService.getGroupIdsByUserId(userId);
-        return groupService.getGroupsByIds(ids, pageNo, pageSize);
+        Page<BigInteger> ids = groupUserJoinService.getGroupIdsByUserId(userId, pageNo, pageSize);
+        return groupService.getGroupsByIds(ids);
     }
 
     @PostMapping("/user/register")

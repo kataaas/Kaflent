@@ -2,6 +2,7 @@ package ru.kataaas.kaflent.conroller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,7 @@ import ru.kataaas.kaflent.utils.GroupTypeEnum;
 import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Objects;
+import java.math.BigInteger;
 import java.util.Optional;
 
 @Slf4j
@@ -74,8 +74,8 @@ public class GroupController {
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
             if (group.isPresent()) {
-                List<Long> ids = groupUserJoinService.getUserIdsByGroupId(group.get().getId());
-                return getResponseEntityByUserIds(group.get(), user.getId(), ids, pageNo, pageSize);
+                Page<BigInteger> ids = groupUserJoinService.getUserIdsByGroupId(group.get().getId(), pageNo, pageSize);
+                return getResponseEntityByUserIds(group.get(), user.getId(), ids);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -83,30 +83,50 @@ public class GroupController {
     }
 
     @GetMapping("/{groupName}/users/request")
-    public ResponseEntity<?> fetchAllRequestsUsers(HttpServletRequest request,
-                                                   @PathVariable String groupName,
-                                                   @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_USERS, required = false) int pageNo,
-                                                   @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_USERS, required = false) int pageSize) {
+    public ResponseEntity<?> fetchRequestsUsersInGroup(HttpServletRequest request,
+                                                       @PathVariable String groupName,
+                                                       @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_USERS, required = false) int pageNo,
+                                                       @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_USERS, required = false) int pageSize) {
         Optional<GroupEntity> group = groupService.findByName(groupName);
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
             if (group.isPresent()) {
-                List<Long> ids = groupUserJoinService.getUserIdsByRequestToGroup(group.get().getId());
-                return getResponseEntityByUserIds(group.get(), user.getId(), ids, pageNo, pageSize);
+                if (userService.checkIfUserIsGroupAdmin(user.getId(), group.get().getId())) {
+                    Page<BigInteger> ids = groupUserJoinService.getUserIdsByRequestToGroup(group.get().getId(), pageNo, pageSize);
+                    return getResponseEntityByUserIds(group.get(), user.getId(), ids);
+                }
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    private ResponseEntity<?> getResponseEntityByUserIds(GroupEntity group, Long userId, List<Long> ids, int pageNo, int pageSize) {
+    @GetMapping("/{groupName}/users/banned")
+    public ResponseEntity<?> fetchBannedUsersInGroup(HttpServletRequest request,
+                                                     @PathVariable String groupName,
+                                                     @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_USERS, required = false) int pageNo,
+                                                     @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_USERS, required = false) int pageSize) {
+        Optional<GroupEntity> group = groupService.findByName(groupName);
+        UserEntity user = userService.getUserEntityFromRequest(request);
+        if (user != null) {
+            if (group.isPresent()) {
+                Page<BigInteger> ids = groupUserJoinService.getBannedUserIdsInGroup(group.get().getId(), pageNo, pageSize);
+                return getResponseEntityByUserIds(group.get(), user.getId(), ids);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    private ResponseEntity<?> getResponseEntityByUserIds(GroupEntity group, Long userId, Page<BigInteger> ids) {
         if (groupUserJoinService.checkIfUserIsNonBannedInGroup(userId, group.getId())) {
             if (group.getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
-                return ResponseEntity.ok(userService.getUsersByIds(ids, pageNo, pageSize));
+                return ResponseEntity.ok(userService.getUsersByIds(ids));
             }
             if (group.getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
                 if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(userId, group.getId())) {
-                    return ResponseEntity.ok(userService.getUsersByIds(ids, pageNo, pageSize));
+                    return ResponseEntity.ok(userService.getUsersByIds(ids));
                 }
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not in a group.");
             }
@@ -134,14 +154,14 @@ public class GroupController {
         return doAction(request, null, groupName, "leave");
     }
 
-    @GetMapping("/{groupName}/users/{username}/ban")
+    @GetMapping("/{groupName}/users/banned/{username}/ban")
     public ResponseEntity<?> banUserInGroup(HttpServletRequest request,
                                             @PathVariable String username,
                                             @PathVariable String groupName) {
         return doAction(request, username, groupName, "ban");
     }
 
-    @GetMapping("/{groupName}/users/{username}/unban")
+    @GetMapping("/{groupName}/users/banned/{username}/unban")
     public ResponseEntity<?> unbanUserInGroup(HttpServletRequest request,
                                             @PathVariable String username,
                                             @PathVariable String groupName) {

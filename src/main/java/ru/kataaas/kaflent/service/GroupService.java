@@ -15,6 +15,8 @@ import ru.kataaas.kaflent.payload.GroupResponse;
 import ru.kataaas.kaflent.repository.GroupRepository;
 import ru.kataaas.kaflent.utils.GroupTypeEnum;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,8 +58,10 @@ public class GroupService {
         return groupRepository.findByName(name);
     }
 
-    public GroupResponse getGroupsByIds(List<Long> ids, int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
+    public GroupResponse getGroupsByIds(Page<BigInteger> idsPage) {
+        Pageable pageable = PageRequest.of(idsPage.getNumber(), idsPage.getSize());
+        List<Long> ids = new ArrayList<>();
+        idsPage.getContent().forEach(id -> ids.add(id.longValue()));
         Page<GroupEntity> groups = groupRepository.findAllByIdInOrderByNameAsc(ids, pageable);
         return groupMapper.toGroupResponse(groups);
     }
