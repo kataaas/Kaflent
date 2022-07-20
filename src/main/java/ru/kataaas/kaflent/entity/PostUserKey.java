@@ -1,22 +1,21 @@
 package ru.kataaas.kaflent.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class GroupRoleKey implements Serializable {
+public class PostUserKey implements Serializable {
 
-    @Column(name = "group_id")
-    private Long groupId;
+    @Column(name = "post_id")
+    private Long postId;
 
     @Column(name = "user_id")
     private Long userId;
@@ -25,12 +24,13 @@ public class GroupRoleKey implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GroupRoleKey that = (GroupRoleKey) o;
-        return Objects.equals(groupId, that.groupId) && Objects.equals(userId, that.userId);
+        PostUserKey that = (PostUserKey) o;
+        return Objects.equals(postId, that.postId) && Objects.equals(userId, that.userId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupId, userId);
+        return Objects.hash(postId, userId);
     }
+
 }

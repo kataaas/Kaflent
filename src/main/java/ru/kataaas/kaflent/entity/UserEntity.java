@@ -27,11 +27,17 @@ public class UserEntity implements Serializable {
 
     private String image;
 
-    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "userEntities", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "userEntities", cascade = CascadeType.ALL)
     private Set<GroupEntity> groups = new HashSet<>();
 
     @OneToMany(mappedBy = "groupMapping", fetch = FetchType.EAGER)
     private Set<GroupUser> groupUsers = new HashSet<>();
+
+    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+    private Set<PostEntity> posts = new HashSet<>();
+
+    @OneToMany(mappedBy = "postMapping", fetch = FetchType.EAGER)
+    private Set<PostUser> postUsers = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles",

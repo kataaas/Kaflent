@@ -28,8 +28,7 @@ public class GroupEntity {
     private GroupTypeEnum groupTypeEnum;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "group_user",
+    @JoinTable(name = "group_user",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<UserEntity> userEntities = new HashSet<>();
