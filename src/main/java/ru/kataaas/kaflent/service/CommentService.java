@@ -41,7 +41,7 @@ public class CommentService {
         return commentMapper.toCommentResponse(comments);
     }
 
-    public int countOfComments(Long postId) {
+    public int getCountOfComments(Long postId) {
         return commentRepository.countAllByPostId(postId);
     }
 

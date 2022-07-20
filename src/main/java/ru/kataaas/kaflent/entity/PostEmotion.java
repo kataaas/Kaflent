@@ -12,8 +12,8 @@ import java.util.Objects;
 @Setter
 @Entity
 @Table(name = "post_emotions")
-@IdClass(PostUserKey.class)
-public class PostUser implements Serializable {
+@IdClass(PostEmotionKey.class)
+public class PostEmotion implements Serializable {
 
     @Id
     private Long postId;
@@ -39,8 +39,8 @@ public class PostUser implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PostUser postUser = (PostUser) o;
-        return Objects.equals(postId, postUser.postId) && Objects.equals(userId, postUser.userId);
+        PostEmotion postEmotion = (PostEmotion) o;
+        return Objects.equals(postId, postEmotion.postId) && Objects.equals(userId, postEmotion.userId);
     }
 
     @Override

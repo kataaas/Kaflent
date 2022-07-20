@@ -18,6 +18,8 @@ public class PostDTO {
 
     private Long groupId;
 
+    private int countOfEmotions;
+
     private int countOfComments;
 
 }

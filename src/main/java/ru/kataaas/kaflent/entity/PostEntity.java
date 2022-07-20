@@ -36,7 +36,7 @@ public class PostEntity {
     private Set<UserEntity> users = new HashSet<>();
 
     @OneToMany(mappedBy = "postMapping", fetch = FetchType.EAGER)
-    private Set<PostUser> postUsers = new HashSet<>();
+    private Set<PostEmotion> postUsers = new HashSet<>();
 
     @Column(name = "created_at")
     @CreationTimestamp

@@ -7,6 +7,7 @@ import ru.kataaas.kaflent.payload.PostDTO;
 import ru.kataaas.kaflent.payload.PostResponse;
 import ru.kataaas.kaflent.entity.PostEntity;
 import ru.kataaas.kaflent.service.CommentService;
+import ru.kataaas.kaflent.service.EmotionService;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,10 +17,13 @@ import java.util.Set;
 @Service
 public class PostMapper {
 
+    private final EmotionService emotionService;
+
     private final CommentService commentService;
 
     @Autowired
-    public PostMapper(CommentService commentService) {
+    public PostMapper(EmotionService emotionService, CommentService commentService) {
+        this.emotionService = emotionService;
         this.commentService = commentService;
     }
 
@@ -49,7 +53,8 @@ public class PostMapper {
         postDTO.setFiles(files);
         postDTO.setCreatedAt(post.getCreatedAt());
         postDTO.setGroupId(post.getGroupId());
-        postDTO.setCountOfComments(commentService.countOfComments(post.getGroupId()));
+        postDTO.setCountOfEmotions(emotionService.getCountOfEmotions(post.getId()));
+        postDTO.setCountOfComments(commentService.getCountOfComments(post.getId()));
 
         return postDTO;
     }

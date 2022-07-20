@@ -36,6 +36,8 @@ public class PostController {
 
     private final GroupService groupService;
 
+    private final EmotionService emotionService;
+
     private final StorageService storageService;
 
     private final GroupUserJoinService groupUserJoinService;
@@ -45,12 +47,14 @@ public class PostController {
                           PostService postService,
                           UserService userService,
                           GroupService groupService,
+                          EmotionService emotionService,
                           StorageService storageService,
                           GroupUserJoinService groupUserJoinService) {
         this.postMapper = postMapper;
         this.postService = postService;
         this.userService = userService;
         this.groupService = groupService;
+        this.emotionService = emotionService;
         this.storageService = storageService;
         this.groupUserJoinService = groupUserJoinService;
     }
@@ -115,6 +119,19 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
+    @GetMapping("/{groupName}/posts/{id}/emotions/put")
+    public ResponseEntity<?> putEmotion(@PathVariable Long id,
+                                        @RequestParam String emotion,
+                                        HttpServletRequest request) {
+        return doPostAction(request, id, emotion, "putEmotion");
+    }
+
+    @DeleteMapping("/{groupName}/posts/{id}/emotions/remove")
+    public ResponseEntity<?> removeEmotion(@PathVariable Long id,
+                                           HttpServletRequest request) {
+        return doPostAction(request, id, null, "removeEmotion");
+    }
+
     @PutMapping("/{groupName}/posts/{id}")
     public ResponseEntity<?> updatePost(@PathVariable Long id,
                                         @RequestBody UpdateContentDTO updateContentDTO,
@@ -132,23 +149,44 @@ public class PostController {
         PostEntity post = postService.findById(postId);
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
-            if (userService.checkIfUserIsGroupAdmin(user.getId(), post.getGroupId())
-                    || userService.checkIfUserIsAdmin(user.getId())) {
-                try {
-                    if (action.equals("update")) {
-                        post.setContent(payload);
-                        PostEntity savedPost = postService.save(post);
-                        return ResponseEntity.ok().body(postMapper.toPostDTO(savedPost));
+            if (post != null) {
+                Optional<GroupEntity> group = groupService.findById(post.getGroupId());
+                if (group.isPresent()) {
+                    if (groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), post.getGroupId())) {
+                        try {
+                            if (userService.checkIfUserIsGroupAdmin(user.getId(), post.getGroupId())
+                                    || userService.checkIfUserIsAdmin(user.getId())) {
+                                if (action.equals("update")) {
+                                    post.setContent(payload);
+                                    PostEntity savedPost = postService.save(post);
+                                    return ResponseEntity.ok().body(postMapper.toPostDTO(savedPost));
+                                }
+                                if (action.equals("delete")) {
+                                    postService.delete(post);
+                                    return ResponseEntity.ok().build();
+                                }
+                            }
+                            if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)
+                                    || (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)
+                                    && groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), group.get().getId()))) {
+                                if (action.equals("putEmotion")) {
+                                    emotionService.createEmotion(user.getId(), postId, payload);
+                                    return ResponseEntity.ok().build();
+                                }
+                                if (action.equals("removeEmotion")) {
+                                    emotionService.deleteEmotion(user.getId(), postId);
+                                    return ResponseEntity.ok().build();
+                                }
+                            }
+                            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                        } catch (Exception e) {
+                            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+                        }
                     }
-                    if (action.equals("delete")) {
-                        postService.delete(post);
-                        return ResponseEntity.ok().build();
-                    }
-                } catch (Exception e) {
-                    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 }
             }
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }

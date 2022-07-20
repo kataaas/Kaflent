@@ -37,7 +37,7 @@ public class UserEntity implements Serializable {
     private Set<PostEntity> posts = new HashSet<>();
 
     @OneToMany(mappedBy = "postMapping", fetch = FetchType.EAGER)
-    private Set<PostUser> postUsers = new HashSet<>();
+    private Set<PostEmotion> postUsers = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles",

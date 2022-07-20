@@ -88,7 +88,7 @@ public class CommentController {
         UserEntity user = userService.getUserEntityFromRequest(request);
         if (user != null) {
             if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), post.getGroupId())
-                    || groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), post.getGroupId())) {
+                    && groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), post.getGroupId())) {
                 comment.setContent(updateContentDTO.getContent());
                 comment.setUserId(user.getId());
                 comment.setPostId(postId);
