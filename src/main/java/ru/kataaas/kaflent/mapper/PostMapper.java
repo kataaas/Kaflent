@@ -3,6 +3,7 @@ package ru.kataaas.kaflent.mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import ru.kataaas.kaflent.payload.EmotionResponse;
 import ru.kataaas.kaflent.payload.PostDTO;
 import ru.kataaas.kaflent.payload.PostResponse;
 import ru.kataaas.kaflent.entity.PostEntity;
@@ -57,6 +58,18 @@ public class PostMapper {
         postDTO.setCountOfComments(commentService.getCountOfComments(post.getId()));
 
         return postDTO;
+    }
+
+    public EmotionResponse toEmotionResponse(Page<String> emotions) {
+        EmotionResponse emotionResponse = new EmotionResponse();
+        emotionResponse.setEmotions(emotions.getContent());
+        emotionResponse.setPageNo(emotions.getNumber());
+        emotionResponse.setPageSize(emotions.getSize());
+        emotionResponse.setTotalElements(emotions.getTotalElements());
+        emotionResponse.setTotalPages(emotions.getTotalPages());
+        emotionResponse.setLast(emotions.isLast());
+
+        return emotionResponse;
     }
 
 }

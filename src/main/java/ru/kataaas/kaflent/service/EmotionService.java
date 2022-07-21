@@ -2,6 +2,9 @@ package ru.kataaas.kaflent.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kataaas.kaflent.entity.PostEmotion;
@@ -48,6 +51,11 @@ public class EmotionService {
     @Transactional
     public void deleteEmotion(Long userId, Long postId) {
         emotionRepository.deleteByUserIdAndPostId(userId, postId);
+    }
+
+    public Page<String> getEmotionsByPostId(Long postId, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return emotionRepository.getEmotionsByPostId(postId, pageable);
     }
 
     public int getCountOfEmotions(Long postId) {

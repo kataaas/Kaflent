@@ -23,6 +23,10 @@ public class StaticVariable {
 
     public  static final String DEFAULT_PAGE_SIZE_POSTS = "5";
 
+    public static final String DEFAULT_PAGE_NUMBER_EMOTIONS = "0";
+
+    public  static final String DEFAULT_PAGE_SIZE_EMOTIONS = "15";
+
 
     public static final String DEFAULT_PAGE_NUMBER_COMMENTS = "0";
 

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.kataaas.kaflent.entity.FileEntity;
 import ru.kataaas.kaflent.entity.GroupEntity;
+import ru.kataaas.kaflent.payload.EmotionResponse;
 import ru.kataaas.kaflent.payload.UpdateContentDTO;
 import ru.kataaas.kaflent.payload.LightPostDTO;
 import ru.kataaas.kaflent.payload.PostResponse;
@@ -115,6 +116,37 @@ public class PostController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access to the group is denied.");
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Group not found.");
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @GetMapping("/{groupName}/posts/{id}/emotions")
+    public ResponseEntity<?> fetchEmotionsByPost(HttpServletRequest request,
+                                                 @PathVariable Long id,
+                                                 @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_EMOTIONS, required = false) int pageNo,
+                                                 @RequestParam(value = "pageSize", defaultValue = StaticVariable.DEFAULT_PAGE_SIZE_EMOTIONS, required = false) int pageSize) {
+        UserEntity user = userService.getUserEntityFromRequest(request);
+        PostEntity post = postService.findById(id);
+        if (user != null) {
+            if (post != null) {
+                Optional<GroupEntity> group = groupService.findById(post.getGroupId());
+                if (group.isPresent()) {
+                    if (groupUserJoinService.checkIfUserIsNonBannedInGroup(user.getId(), post.getGroupId())) {
+                        EmotionResponse emotionResponse = postMapper.toEmotionResponse(emotionService.getEmotionsByPostId(post.getId(), pageNo, pageSize));
+                        if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PUBLIC)) {
+                            return ResponseEntity.ok(emotionResponse);
+                        }
+                        if (group.get().getGroupTypeEnum().equals(GroupTypeEnum.PRIVATE)) {
+                            if (groupUserJoinService.checkIfUserIsAuthorizedInGroup(user.getId(), post.getGroupId())) {
+                                return ResponseEntity.ok(emotionResponse);
+                            }
+                            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not in a group.");
+                        }
+                    }
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access to the group is denied.");
+                }
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
