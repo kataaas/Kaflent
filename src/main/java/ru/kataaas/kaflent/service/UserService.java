@@ -56,8 +56,8 @@ public class UserService {
     }
 
     @Transactional
-    public void save(UserEntity userEntity) {
-        userRepository.save(userEntity);
+    public UserEntity save(UserEntity userEntity) {
+        return userRepository.save(userEntity);
     }
 
     public Long findIdByUsername(String username) {

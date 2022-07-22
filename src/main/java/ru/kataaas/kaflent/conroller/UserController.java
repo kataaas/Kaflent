@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import ru.kataaas.kaflent.payload.GroupResponse;
 import ru.kataaas.kaflent.payload.RegisterDTO;
@@ -12,13 +13,13 @@ import ru.kataaas.kaflent.payload.UserDTO;
 import ru.kataaas.kaflent.entity.RoleEntity;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.UserMapper;
-import ru.kataaas.kaflent.service.GroupService;
-import ru.kataaas.kaflent.service.GroupUserJoinService;
-import ru.kataaas.kaflent.service.RoleService;
-import ru.kataaas.kaflent.service.UserService;
+import ru.kataaas.kaflent.service.*;
+import ru.kataaas.kaflent.utils.JwtUtil;
 import ru.kataaas.kaflent.utils.StaticVariable;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +29,8 @@ import java.util.Random;
 @RestController
 @RequestMapping("/api/v1")
 public class UserController {
+
+    private final JwtUtil jwtUtil;
 
     private final UserMapper userMapper;
 
@@ -39,17 +42,23 @@ public class UserController {
 
     private final GroupUserJoinService groupUserJoinService;
 
+    private final CustomUserDetailsService userDetailsService;
+
     @Autowired
-    public UserController(UserMapper userMapper,
+    public UserController(JwtUtil jwtUtil,
+                          UserMapper userMapper,
                           UserService userService,
                           RoleService roleService,
                           GroupService groupService,
-                          GroupUserJoinService groupUserJoinService) {
+                          GroupUserJoinService groupUserJoinService,
+                          CustomUserDetailsService userDetailsService) {
+        this.jwtUtil = jwtUtil;
         this.userMapper = userMapper;
         this.userService = userService;
         this.roleService = roleService;
         this.groupService = groupService;
         this.groupUserJoinService = groupUserJoinService;
+        this.userDetailsService = userDetailsService;
     }
 
     @GetMapping("/user/fetch")
@@ -77,7 +86,7 @@ public class UserController {
     }
 
     @PostMapping("/user/register")
-    public ResponseEntity<?> createUser(@RequestBody RegisterDTO registerDTO) {
+    public ResponseEntity<?> createUser(@RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
         if (userService.checkIfUsernameAlreadyUsed(registerDTO.getUsername())) {
             return ResponseEntity.badRequest().body("Username: " + registerDTO.getUsername() + " already used");
         }
@@ -96,13 +105,21 @@ public class UserController {
         user.setRoles(Collections.singleton(roles));
 
         try {
-            userService.save(user);
+            UserEntity savedUser = userService.save(user);
             log.info("User saved successfully");
-            return ResponseEntity.ok().build();
+            UserDetails userDetails = userDetailsService.loadUserByUsername(savedUser.getUsername());
+            String token = jwtUtil.generateToken(userDetails);
+            Cookie jwtAuthToken = new Cookie(StaticVariable.SECURE_COOKIE, token);
+            jwtAuthToken.setHttpOnly(true);
+            jwtAuthToken.setSecure(false);
+            jwtAuthToken.setPath("/");
+            jwtAuthToken.setMaxAge(604800000); // 7 days
+            response.addCookie(jwtAuthToken);
+            return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toAuthResponse(user, token));
         } catch (Exception e) {
             log.error("Error while registering user : {}", e.getMessage());
         }
-        return ResponseEntity.status(500).build();
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
 }
