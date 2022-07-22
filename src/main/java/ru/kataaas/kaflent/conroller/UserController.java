@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Slf4j
 @RestController
@@ -87,6 +88,7 @@ public class UserController {
         user.setUsername(registerDTO.getUsername());
         user.setEmail(registerDTO.getEmail());
         user.setPassword(userService.passwordEncoder(registerDTO.getPassword()));
+        user.setImage("default_" + new Random().nextInt(3) + ".jpg");
         user.setAccountNonLocked(true);
         user.setEnabled(true);
 
