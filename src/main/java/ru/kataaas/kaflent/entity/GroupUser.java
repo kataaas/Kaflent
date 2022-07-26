@@ -12,7 +12,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "group_user")
 @IdClass(GroupRoleKey.class)
-public class GroupUser implements Serializable {
+public class GroupUser {
 
     @Id
     private Long groupId;
@@ -20,12 +20,12 @@ public class GroupUser implements Serializable {
     @Id
     private Long userId;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @MapsId("groupId")
     @JoinColumn(name = "group_id")
     GroupEntity groupMapping;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @MapsId("userId")
     @JoinColumn(name = "user_id")
     UserEntity userMapping;

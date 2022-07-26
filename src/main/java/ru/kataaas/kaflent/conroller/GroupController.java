@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ru.kataaas.kaflent.payload.CreateGroupDTO;
 import ru.kataaas.kaflent.entity.GroupEntity;
@@ -257,6 +258,27 @@ public class GroupController {
         }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(groupService.createGroup(user.getId(), groupDTO.getName(), groupDTO.getType()));
+    }
+
+    @DeleteMapping("/{groupName}")
+    public ResponseEntity<?> deleteGroup(@PathVariable String groupName, HttpServletRequest request) {
+        UserEntity user = userService.getUserEntityFromRequest(request);
+        if (user != null) {
+            Long groupId = groupService.findIdByName(groupName);
+            if (groupId != null) {
+                if (userService.checkIfUserIsGroupAdmin(user.getId(), groupId)) {
+                    try {
+                        groupService.deleteById(groupId);
+                        return ResponseEntity.ok().build();
+                    } catch (Exception e) {
+                        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+                    }
+                }
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
 }

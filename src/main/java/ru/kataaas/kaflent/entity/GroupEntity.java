@@ -27,13 +27,13 @@ public class GroupEntity {
     @Enumerated(value = EnumType.STRING)
     private GroupTypeEnum groupTypeEnum;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinTable(name = "group_user",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<UserEntity> userEntities = new HashSet<>();
 
-    @OneToMany(mappedBy = "groupMapping", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "groupMapping", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Set<GroupUser> groupUsers = new HashSet<>();
 
     @Column(name = "created_at")

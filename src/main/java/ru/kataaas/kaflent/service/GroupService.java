@@ -46,6 +46,10 @@ public class GroupService {
         groupRepository.save(group);
     }
 
+    public void deleteById(Long id) {
+        groupRepository.deleteById(id);
+    }
+
     public Long findIdByName(String name) {
         return groupRepository.findIdByName(name);
     }
@@ -111,11 +115,11 @@ public class GroupService {
         groupUser.setGroupMapping(group);
         groupUser.setUserMapping(user);
         groupUser.setInGroup(true);
-        groupUser.setApplicationAccepted(true);
         groupUser.setUserNonBanned(true);
-        savedGroup.getUserEntities().add(user);
+        groupUser.setApplicationAccepted(true);
         groupUserJoinService.save(groupUser);
 
+        savedGroup.getUserEntities().add(user);
         return groupMapper.toGroupDTO(savedGroup);
     }
 

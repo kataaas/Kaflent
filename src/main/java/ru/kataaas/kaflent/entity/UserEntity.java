@@ -30,7 +30,7 @@ public class UserEntity implements Serializable {
     @ManyToMany(mappedBy = "userEntities", cascade = CascadeType.ALL)
     private Set<GroupEntity> groups = new HashSet<>();
 
-    @OneToMany(mappedBy = "groupMapping", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "groupMapping", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<GroupUser> groupUsers = new HashSet<>();
 
     @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
