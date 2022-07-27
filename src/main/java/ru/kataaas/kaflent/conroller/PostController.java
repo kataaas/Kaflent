@@ -1,20 +1,18 @@
 package ru.kataaas.kaflent.conroller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.kataaas.kaflent.entity.FileEntity;
 import ru.kataaas.kaflent.entity.GroupEntity;
-import ru.kataaas.kaflent.payload.EmotionResponse;
-import ru.kataaas.kaflent.payload.UpdateContentDTO;
-import ru.kataaas.kaflent.payload.LightPostDTO;
-import ru.kataaas.kaflent.payload.PostResponse;
 import ru.kataaas.kaflent.entity.PostEntity;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.PostMapper;
+import ru.kataaas.kaflent.payload.EmotionResponse;
+import ru.kataaas.kaflent.payload.PostResponse;
+import ru.kataaas.kaflent.payload.UpdateContentDTO;
 import ru.kataaas.kaflent.service.*;
 import ru.kataaas.kaflent.utils.FileTypeEnum;
 import ru.kataaas.kaflent.utils.GroupTypeEnum;
@@ -120,7 +118,7 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    @GetMapping("/{groupName}/posts/{id}/emotions")
+    @GetMapping("/posts/{id}/emotions")
     public ResponseEntity<?> fetchEmotionsByPost(HttpServletRequest request,
                                                  @PathVariable Long id,
                                                  @RequestParam(value = "pageNo", defaultValue = StaticVariable.DEFAULT_PAGE_NUMBER_EMOTIONS, required = false) int pageNo,
@@ -151,27 +149,27 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    @GetMapping("/{groupName}/posts/{id}/emotions/put")
+    @GetMapping("/posts/{id}/emotions/put")
     public ResponseEntity<?> putEmotion(@PathVariable Long id,
                                         @RequestParam String emotion,
                                         HttpServletRequest request) {
         return doPostAction(request, id, emotion, "putEmotion");
     }
 
-    @DeleteMapping("/{groupName}/posts/{id}/emotions/remove")
+    @DeleteMapping("/posts/{id}/emotions/remove")
     public ResponseEntity<?> removeEmotion(@PathVariable Long id,
                                            HttpServletRequest request) {
         return doPostAction(request, id, null, "removeEmotion");
     }
 
-    @PutMapping("/{groupName}/posts/{id}")
+    @PutMapping("/posts/{id}")
     public ResponseEntity<?> updatePost(@PathVariable Long id,
                                         @RequestBody UpdateContentDTO updateContentDTO,
                                         HttpServletRequest request) {
         return doPostAction(request, id, updateContentDTO.getContent(), "update");
     }
 
-    @DeleteMapping("/{groupName}/posts/{id}")
+    @DeleteMapping("/posts/{id}")
     public ResponseEntity<?> deletePost(@PathVariable Long id,
                                         HttpServletRequest request) {
         return doPostAction(request, id, null, "delete");

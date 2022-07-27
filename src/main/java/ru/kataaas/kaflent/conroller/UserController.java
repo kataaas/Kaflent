@@ -7,22 +7,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import ru.kataaas.kaflent.payload.GroupResponse;
-import ru.kataaas.kaflent.payload.RegisterDTO;
-import ru.kataaas.kaflent.payload.UserDTO;
 import ru.kataaas.kaflent.entity.RoleEntity;
 import ru.kataaas.kaflent.entity.UserEntity;
 import ru.kataaas.kaflent.mapper.UserMapper;
+import ru.kataaas.kaflent.payload.GroupResponse;
+import ru.kataaas.kaflent.payload.RegisterDTO;
+import ru.kataaas.kaflent.payload.UserDTO;
 import ru.kataaas.kaflent.service.*;
 import ru.kataaas.kaflent.utils.JwtUtil;
 import ru.kataaas.kaflent.utils.StaticVariable;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigInteger;
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -59,12 +57,6 @@ public class UserController {
         this.groupService = groupService;
         this.groupUserJoinService = groupUserJoinService;
         this.userDetailsService = userDetailsService;
-    }
-
-    @GetMapping("/user/fetch")
-    public UserDTO fetch(HttpServletRequest request) {
-        UserEntity user = userService.getUserEntityFromRequest(request);
-        return userMapper.toUserDTO(user);
     }
 
     @GetMapping("/user/{username}")

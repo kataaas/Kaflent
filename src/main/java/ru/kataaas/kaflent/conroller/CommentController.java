@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/{groupName}")
+@RequestMapping("/api/v1")
 public class CommentController {
 
     private final UserService userService;
@@ -104,14 +104,14 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    @PutMapping("/posts/{postId}/comments/{commentId}")
+    @PutMapping("/comments/{commentId}")
     public ResponseEntity<?> updateComment(HttpServletRequest request,
                                            @PathVariable Long commentId,
                                            @RequestBody UpdateContentDTO updateContentDTO) {
         return doCommentAction(request, commentId, updateContentDTO.getContent(), "update");
     }
 
-    @DeleteMapping("/posts/{postId}/comments/{commentId}")
+    @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<?> removeComment(HttpServletRequest request, @PathVariable Long commentId) {
         return doCommentAction(request, commentId, null, "remove");
     }

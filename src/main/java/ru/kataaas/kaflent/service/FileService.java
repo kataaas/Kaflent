@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.kataaas.kaflent.entity.FileEntity;
 import ru.kataaas.kaflent.repository.FileRepository;
-import ru.kataaas.kaflent.utils.FileTypeEnum;
 
 @Service
 public class FileService {
